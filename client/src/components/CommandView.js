@@ -6,32 +6,31 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
   const [args, setArgs] = useState('');
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  
-  // Execute Redis command
+
   const executeCommand = async () => {
     if (!isConnected) {
       showToast('Not Connected', 'Please connect to Redis server first.', true);
       return;
     }
-    
+
     const cmd = command.trim();
     if (!cmd) {
       showToast('Invalid Command', 'Please enter a command to execute.', true);
       return;
     }
-    
+
     const argArray = args.trim() ? args.trim().split(/\s+/) : [];
-    
+
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await axios.post('/api/execute', {
         ...connectionConfig,
         command: cmd,
         args: argArray
       });
-      
+
       setResult(response.data.result);
     } catch (error) {
       setError(error.response?.data?.detail || 'Error executing command');
@@ -40,8 +39,7 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
       setIsLoading(false);
     }
   };
-  
-  // Format command result for display
+
   const formatResult = (value) => {
     if (value === null) {
       return <em>null</em>;
@@ -49,10 +47,10 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
       return <em>(empty string)</em>;
     } else if (Array.isArray(value)) {
       return (
-        <div className="pl-4 border-l-2 border-gray-300">
+        <div className="pl-4 border-l-2 border-gray-600">
           {value.map((item, index) => (
             <div key={index} className="mb-1">
-              <span className="text-gray-500 mr-2">{index})</span>
+              <span className="text-gray-400 mr-2">{index})</span>
               {formatResult(item)}
             </div>
           ))}
@@ -60,18 +58,18 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
       );
     } else if (typeof value === 'object') {
       return (
-        <table className="min-w-full border">
-          <thead className="bg-gray-100">
+        <table className="min-w-full border border-gray-600">
+          <thead className="bg-gray-700">
             <tr>
-              <th className="py-2 px-4 border text-left">Key</th>
-              <th className="py-2 px-4 border text-left">Value</th>
+              <th className="py-2 px-4 border border-gray-600 text-left text-white">Key</th>
+              <th className="py-2 px-4 border border-gray-600 text-left text-white">Value</th>
             </tr>
           </thead>
           <tbody>
             {Object.entries(value).map(([key, val], index) => (
-              <tr key={index} className="border-t">
-                <td className="py-2 px-4 border">{key}</td>
-                <td className="py-2 px-4 border">{formatResult(val)}</td>
+              <tr key={index} className="border-t border-gray-600">
+                <td className="py-2 px-4 border border-gray-600 text-white">{key}</td>
+                <td className="py-2 px-4 border border-gray-600 text-white">{formatResult(val)}</td>
               </tr>
             ))}
           </tbody>
@@ -81,58 +79,58 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
       return String(value);
     }
   };
-  
+
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Execute Redis Command</h1>
-      
-      <div className="bg-white p-4 rounded shadow mb-6">
+    <div className="p-4 bg-gray-800 text-white max-w-4xl mx-auto">
+      <h1 className="text-xl font-semibold mb-4">Execute Redis Command</h1>
+
+      <div className="bg-gray-900 p-4 rounded-lg shadow-md mb-4">
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">Command</label>
+          <label className="block text-sm font-medium mb-1">Command</label>
           <input
             type="text"
             value={command}
             onChange={(e) => setCommand(e.target.value)}
             onKeyUp={(e) => e.key === 'Enter' && !e.shiftKey && executeCommand()}
             placeholder="e.g., GET, HGETALL, KEYS"
-            className="w-full px-3 py-2 border rounded"
+            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:ring-2 focus:ring-red-500"
           />
         </div>
-        
+
         <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">Arguments (space-separated)</label>
+          <label className="block text-sm font-medium mb-1">Arguments (space-separated)</label>
           <input
             type="text"
             value={args}
             onChange={(e) => setArgs(e.target.value)}
             onKeyUp={(e) => e.key === 'Enter' && executeCommand()}
             placeholder="e.g., user:123"
-            className="w-full px-3 py-2 border rounded"
+            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:ring-2 focus:ring-red-500"
           />
         </div>
-        
+
         <button
           onClick={executeCommand}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center"
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md flex items-center transition duration-150 ease-in-out"
         >
           <i className="fas fa-play mr-2"></i> Execute
         </button>
       </div>
-      
-      <div className="bg-white p-4 rounded shadow">
-        <h2 className="text-lg font-semibold border-b pb-2 mb-4">Result</h2>
-        
+
+      <div className="bg-gray-900 p-4 rounded-lg shadow-md">
+        <h2 className="text-lg font-semibold border-b border-gray-600 pb-2 mb-4">Result</h2>
+
         {error ? (
-          <div className="text-red-500">
+          <div className="text-red-400">
             <i className="fas fa-exclamation-circle mr-2"></i>
             {error}
           </div>
         ) : result !== null ? (
-          <div className="bg-gray-50 p-4 rounded overflow-auto max-h-96">
+          <div className="bg-gray-700 p-4 rounded-md overflow-auto max-h-96">
             {formatResult(result)}
           </div>
         ) : (
-          <div className="text-gray-500 text-center py-8">
+          <div className="text-gray-400 text-center py-8">
             Execute a command to see results
           </div>
         )}
@@ -140,5 +138,6 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
     </div>
   );
 };
+
 
 export default CommandView;

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import Sidebar from './components/Sidebar';
+import Sidebar from './components/SideBar';
 import KeysView from './components/KeysView';
 import InfoView from './components/InfoView';
 import CommandView from './components/CommandView';
 import ToastMessage from './components/ToastMessage';
 import LoadingOverlay from './components/LoadingOverlay';
 
-function App() {
+const App = () => {
   const [activeView, setActiveView] = useState('keys-view');
   const [isConnected, setIsConnected] = useState(false);
   const [connectionConfig, setConnectionConfig] = useState({
@@ -18,19 +18,17 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState({ show: false, title: '', message: '', isError: false });
 
-  // Method to show toast notifications
   const showToast = (title, message, isError = false) => {
     setToast({ show: true, title, message, isError });
     setTimeout(() => setToast({ show: false, title: '', message: '', isError: false }), 3000);
   };
 
-  // Method to update connection configuration
   const updateConnectionConfig = (config) => {
     setConnectionConfig(config);
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-900">
       <Sidebar 
         activeView={activeView} 
         setActiveView={setActiveView}
@@ -41,9 +39,9 @@ function App() {
         showToast={showToast}
         setIsLoading={setIsLoading}
       />
-      
+
       <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-200">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-800">
           {activeView === 'keys-view' && (
             <KeysView 
               isConnected={isConnected}
@@ -52,7 +50,7 @@ function App() {
               setIsLoading={setIsLoading}
             />
           )}
-          
+
           {activeView === 'info-view' && (
             <InfoView 
               isConnected={isConnected}
@@ -61,7 +59,7 @@ function App() {
               setIsLoading={setIsLoading}
             />
           )}
-          
+
           {activeView === 'command-view' && (
             <CommandView 
               isConnected={isConnected}
@@ -72,11 +70,11 @@ function App() {
           )}
         </main>
       </div>
-      
+
       {toast.show && <ToastMessage toast={toast} />}
       {isLoading && <LoadingOverlay />}
     </div>
   );
-}
+};
 
 export default App;

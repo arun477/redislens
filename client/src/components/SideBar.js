@@ -12,7 +12,7 @@ const Sidebar = ({
   setIsLoading
 }) => {
   const [formData, setFormData] = useState(connectionConfig);
-  
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -20,12 +20,12 @@ const Sidebar = ({
       [name]: name === 'port' || name === 'db' ? parseInt(value) : value
     });
   };
-  
+
   const testConnection = async () => {
     try {
       setIsLoading(true);
       const response = await axios.post('/api/ping', formData);
-      
+
       if (response.data.status === 'ok') {
         setIsConnected(true);
         updateConnectionConfig(formData);
@@ -41,17 +41,17 @@ const Sidebar = ({
       setIsLoading(false);
     }
   };
-  
+
   return (
-    <div className="w-64 bg-gray-800 text-white h-screen flex flex-col">
-      <div className="p-4 border-b border-gray-700">
+    <div className="w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white h-screen flex flex-col shadow-md">
+      <div className="p-4 border-b border-gray-600">
         <div className="flex items-center space-x-2">
           <i className="fas fa-database text-red-500"></i>
-          <h1 className="text-xl font-bold">Redis Explorer</h1>
+          <h1 className="text-xl font-semibold">Redis Explorer</h1>
         </div>
       </div>
-      
-      <div className="p-4 border-b border-gray-700">
+
+      <div className="p-4 border-b border-gray-600">
         <div className="mb-4">
           <label className="block text-sm mb-1">
             <i className="fas fa-server mr-1"></i> Host
@@ -61,10 +61,10 @@ const Sidebar = ({
             name="host"
             value={formData.host}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 text-black rounded"
+            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:ring-2 focus:ring-red-500"
           />
         </div>
-        
+
         <div className="mb-4">
           <label className="block text-sm mb-1">
             <i className="fas fa-plug mr-1"></i> Port
@@ -74,10 +74,10 @@ const Sidebar = ({
             name="port"
             value={formData.port}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 text-black rounded"
+            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:ring-2 focus:ring-red-500"
           />
         </div>
-        
+
         <div className="mb-4">
           <label className="block text-sm mb-1">
             <i className="fas fa-layer-group mr-1"></i> DB
@@ -87,10 +87,10 @@ const Sidebar = ({
             name="db"
             value={formData.db}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 text-black rounded"
+            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:ring-2 focus:ring-red-500"
           />
         </div>
-        
+
         <div className="mb-4">
           <label className="block text-sm mb-1">
             <i className="fas fa-key mr-1"></i> Password
@@ -100,18 +100,18 @@ const Sidebar = ({
             name="password"
             value={formData.password}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 text-black rounded"
+            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:ring-2 focus:ring-red-500"
           />
         </div>
-        
+
         <button
           onClick={testConnection}
-          className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded flex items-center justify-center"
+          className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md flex items-center justify-center transition duration-150 ease-in-out"
         >
           <i className="fas fa-plug mr-2"></i> Connect
         </button>
       </div>
-      
+
       <div className="flex-1">
         <div
           className={`p-4 cursor-pointer hover:bg-gray-700 flex items-center space-x-2 ${
@@ -122,7 +122,7 @@ const Sidebar = ({
           <i className="fas fa-key"></i>
           <span>Keys</span>
         </div>
-        
+
         <div
           className={`p-4 cursor-pointer hover:bg-gray-700 flex items-center space-x-2 ${
             activeView === 'info-view' ? 'bg-gray-700 border-l-4 border-red-500' : ''
@@ -132,7 +132,7 @@ const Sidebar = ({
           <i className="fas fa-info-circle"></i>
           <span>Server Info</span>
         </div>
-        
+
         <div
           className={`p-4 cursor-pointer hover:bg-gray-700 flex items-center space-x-2 ${
             activeView === 'command-view' ? 'bg-gray-700 border-l-4 border-red-500' : ''
@@ -143,8 +143,8 @@ const Sidebar = ({
           <span>Execute Command</span>
         </div>
       </div>
-      
-      <div className="p-4 border-t border-gray-700 flex items-center space-x-2">
+
+      <div className="p-4 border-t border-gray-600 flex items-center space-x-2">
         <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
         <span>{isConnected ? 'Connected' : 'Disconnected'}</span>
       </div>
