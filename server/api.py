@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel
 import os
 import json
+import math
 
 from redis_client import RedisClient
 
@@ -41,6 +42,11 @@ class RedisConnection(BaseModel):
 class RedisCommand(BaseModel):
     command: str
     args: List[str] = []
+
+class PaginationParams(BaseModel):
+    page: int = 1
+    per_page: int = 50
+    pattern: str = "*"
 
 def get_redis_client(conn: RedisConnection = Depends()):
     client = RedisClient(
@@ -94,10 +100,33 @@ def get_info(client: RedisClient = Depends(get_redis_client)):
         raise HTTPException(status_code=500, detail=f"Error fetching Redis info: {str(e)}")
 
 @app.post("/api/keys")
-def get_keys(pattern: str = "*", client: RedisClient = Depends(get_redis_client)):
+def get_keys(
+    pattern: str = "*", 
+    page: int = 1, 
+    per_page: int = 50,
+    client: RedisClient = Depends(get_redis_client)
+):
     try:
-        keys = client.get_keys(pattern)
-        return {"keys": keys, "count": len(keys)}
+        # Get all keys matching the pattern
+        all_keys = client.get_keys(pattern)
+        total_keys = len(all_keys)
+        
+        # Calculate pagination
+        total_pages = math.ceil(total_keys / per_page) if total_keys > 0 else 0
+        start_index = (page - 1) * per_page
+        end_index = min(start_index + per_page, total_keys)
+        
+        # Get the paginated slice of keys
+        paginated_keys = all_keys[start_index:end_index] if all_keys else []
+        
+        return {
+            "keys": paginated_keys,
+            "count": len(paginated_keys),
+            "total": total_keys,
+            "page": page,
+            "per_page": per_page,
+            "total_pages": total_pages
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching keys: {str(e)}")
 

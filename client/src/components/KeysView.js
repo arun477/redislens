@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import KeyDetails from "./KeyDetails";
 
-const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) => {
+const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading, theme }) => {
   const [keys, setKeys] = useState([]);
   const [pattern, setPattern] = useState("*");
   const [selectedKey, setSelectedKey] = useState(null);
@@ -13,8 +13,72 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
   const [sortDir, setSortDir] = useState('asc'); // 'asc', 'desc'
   const [searchDebounce, setSearchDebounce] = useState(null);
   const searchInputRef = useRef(null);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [keysPerPage, setKeysPerPage] = useState(50);
+  const [totalKeys, setTotalKeys] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const fetchKeys = async (pattern = "*") => {
+  // Theme-dependent styles
+  const isDark = theme === 'dark';
+  
+  const styles = {
+    // Main container styles
+    container: isDark ? 'bg-gray-900 text-gray-200' : 'bg-gray-50 text-gray-800',
+    panel: isDark ? 'bg-gray-800' : 'bg-white',
+    border: isDark ? 'border-gray-700' : 'border-gray-200',
+    divider: isDark ? 'border-gray-700' : 'border-gray-200',
+    
+    // Text and accent colors
+    text: {
+      primary: isDark ? 'text-white' : 'text-gray-900',
+      secondary: isDark ? 'text-gray-400' : 'text-gray-500',
+      accent: isDark ? 'text-blue-400' : 'text-blue-600',
+    },
+    
+    // Background colors
+    bg: {
+      hover: isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100',
+      selected: isDark ? 'bg-blue-900/20' : 'bg-blue-50',
+      accent: isDark ? 'bg-blue-600' : 'bg-blue-600',
+      input: isDark ? 'bg-gray-800' : 'bg-white',
+    },
+    
+    // Component-specific styles
+    search: {
+      input: `${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'} focus:border-blue-500 focus:ring-blue-500`,
+      icon: isDark ? 'text-gray-500' : 'text-gray-400',
+    },
+    
+    button: {
+      primary: `${isDark ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-600 hover:bg-blue-700'} text-white`,
+      secondary: `${isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`,
+      danger: `${isDark ? 'bg-red-600/30 hover:bg-red-600/50 text-red-300' : 'bg-red-50 hover:bg-red-100 text-red-600'}`,
+    },
+    
+    // List and grid items
+    item: {
+      base: `border ${isDark ? 'border-gray-700' : 'border-gray-200'}`,
+      hover: isDark ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50',
+      selected: isDark ? 'bg-blue-900/20 border-blue-600' : 'bg-blue-50 border-blue-300',
+    },
+    
+    // Table styles
+    table: {
+      header: `${isDark ? 'bg-gray-800 text-gray-400' : 'bg-gray-50 text-gray-500'} ${isDark ? 'border-gray-700' : 'border-gray-200'}`,
+      row: `${isDark ? 'border-gray-700' : 'border-gray-200'} ${isDark ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'}`,
+    },
+    
+    // Pagination
+    pagination: {
+      item: `${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} ${isDark ? 'text-gray-400' : 'text-gray-700'} ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`,
+      active: `${isDark ? 'bg-blue-900/30 border-blue-700 text-blue-400' : 'bg-blue-50 border-blue-300 text-blue-600'}`,
+      disabled: `${isDark ? 'bg-gray-800 border-gray-700 text-gray-600' : 'bg-gray-100 border-gray-200 text-gray-400'} cursor-not-allowed`,
+    }
+  };
+
+  const fetchKeys = async (pattern = "*", page = 1, perPage = keysPerPage) => {
     if (!isConnected) {
       showToast("Not Connected", "Please connect to Redis server first.", true);
       return;
@@ -31,18 +95,26 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
         body: JSON.stringify({
           ...connectionConfig,
           pattern,
+          page,
+          per_page: perPage
         })
       });
       
       const data = await response.json();
       
+      // Set the keys from the server response
       setKeys(data.keys || []);
+      setTotalKeys(data.total || 0);
+      setTotalPages(data.total_pages || 0);
+      setCurrentPage(data.page || 1);
+      
+      // Update selected keys to remove any that are no longer present
       const newSelectedKeys = new Set(
-        [...selectedKeys].filter((key) => data.keys.includes(key))
+        [...selectedKeys].filter((key) => (data.keys || []).includes(key))
       );
       setSelectedKeys(newSelectedKeys);
 
-      if (selectedKey && !data.keys.includes(selectedKey)) {
+      if (selectedKey && !(data.keys || []).includes(selectedKey)) {
         setSelectedKey(null);
         setKeyDetails(null);
       }
@@ -57,6 +129,22 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
     }
   };
 
+  // Function to load a specific page of keys
+  const loadPage = (pageNumber) => {
+    if (pageNumber < 1 || pageNumber > totalPages) return;
+    
+    setCurrentPage(pageNumber);
+    fetchKeys(pattern, pageNumber, keysPerPage);
+    scrollToTop();
+  };
+  
+  // Scroll to top of list
+  const scrollToTop = () => {
+    if (document.querySelector('.keys-list-container')) {
+      document.querySelector('.keys-list-container').scrollTop = 0;
+    }
+  };
+
   // Handle search with debounce
   const handleSearchChange = (e) => {
     const searchValue = e.target.value;
@@ -68,7 +156,8 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
     
     setSearchDebounce(
       setTimeout(() => {
-        fetchKeys(searchValue || "*");
+        setCurrentPage(1); // Reset to page 1 when search changes
+        fetchKeys(searchValue || "*", 1, keysPerPage);
       }, 300)
     );
   };
@@ -124,7 +213,7 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
 
       if (data.status === "ok") {
         showToast("Success", `Key '${key}' was deleted successfully.`);
-        fetchKeys(pattern);
+        fetchKeys(pattern, currentPage, keysPerPage);
         if (selectedKey === key) {
           setSelectedKey(null);
           setKeyDetails(null);
@@ -184,7 +273,7 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
           "Success",
           `Deleted ${data.deleted_count} of ${data.total_count} keys.`
         );
-        fetchKeys(pattern);
+        fetchKeys(pattern, currentPage, keysPerPage);
         setSelectedKeys(new Set());
         setSelectAll(false);
         if (selectedKey && keysToDelete.includes(selectedKey)) {
@@ -261,7 +350,7 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
   // Handle refresh event from Header
   useEffect(() => {
     const handleRefresh = () => {
-      fetchKeys(pattern);
+      fetchKeys(pattern, currentPage, keysPerPage);
     };
     
     window.addEventListener('refreshKeys', handleRefresh);
@@ -269,7 +358,13 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
     return () => {
       window.removeEventListener('refreshKeys', handleRefresh);
     };
-  }, [pattern]);
+  }, [pattern, currentPage, keysPerPage]);
+
+  // When keys per page changes, reset to page 1
+  useEffect(() => {
+    setCurrentPage(1);
+    fetchKeys(pattern, 1, keysPerPage);
+  }, [keysPerPage]);
 
   // Initial load
   useEffect(() => {
@@ -286,216 +381,393 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
   }, []);
 
   const getTypeIcon = (type) => {
-    if (!type) return <i className="fas fa-question text-gray-400"></i>;
+    // Instead of a loading icon, use a generic key icon for unknown types
+    if (!type) return <i className={`fas fa-key ${styles.text.secondary}`}></i>;
     
-    switch(type.toLowerCase()) {
-      case 'string': return <i className="fas fa-font text-blue-600"></i>;
-      case 'list': return <i className="fas fa-list text-green-600"></i>;
-      case 'set': return <i className="fas fa-th-large text-purple-600"></i>;
-      case 'zset': return <i className="fas fa-sort-amount-up text-yellow-600"></i>;
-      case 'hash': return <i className="fas fa-hashtag text-red-600"></i>;
-      default: return <i className="fas fa-question text-gray-400"></i>;
-    }
+    const iconMap = {
+      'string': <i className={isDark ? 'text-blue-400 fas fa-font' : 'text-blue-600 fas fa-font'}></i>,
+      'list': <i className={isDark ? 'text-green-400 fas fa-list' : 'text-green-600 fas fa-list'}></i>,
+      'set': <i className={isDark ? 'text-purple-400 fas fa-th-large' : 'text-purple-600 fas fa-th-large'}></i>,
+      'zset': <i className={isDark ? 'text-yellow-400 fas fa-sort-amount-up' : 'text-yellow-600 fas fa-sort-amount-up'}></i>,
+      'hash': <i className={isDark ? 'text-red-400 fas fa-hashtag' : 'text-red-600 fas fa-hashtag'}></i>
+    };
+    
+    return iconMap[type.toLowerCase()] || <i className="fas fa-question text-gray-400"></i>;
   };
 
   const keyType = (key) => {
     return keyDetails && keyDetails.key === key ? keyDetails.type : null;
   };
 
+  // Render pagination controls
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+    
+    const pageNumbers = [];
+    
+    // Add first page
+    pageNumbers.push(1);
+    
+    // Add ellipsis if needed
+    if (currentPage > 3) {
+      pageNumbers.push('...');
+    }
+    
+    // Add pages around current page
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+      pageNumbers.push(i);
+    }
+    
+    // Add ellipsis if needed
+    if (currentPage < totalPages - 2) {
+      pageNumbers.push('...');
+    }
+    
+    // Add last page if there are multiple pages
+    if (totalPages > 1) {
+      pageNumbers.push(totalPages);
+    }
+    
+    return (
+      <div className={`flex items-center justify-between p-3 ${styles.panel} border-t ${styles.border}`}>
+        <div className="flex items-center">
+          <p className={`text-sm ${styles.text.secondary}`}>
+            <span className={styles.text.primary}>{keys.length > 0 ? (currentPage - 1) * keysPerPage + 1 : 0}</span> to{' '}
+            <span className={styles.text.primary}>{Math.min(currentPage * keysPerPage, totalKeys)}</span>{' '}
+            of <span className={styles.text.primary}>{totalKeys}</span> keys
+          </p>
+          
+          <div className="flex items-center ml-6">
+            <label className={`text-sm ${styles.text.secondary} mr-2`}>Per page:</label>
+            <select
+              value={keysPerPage}
+              onChange={(e) => setKeysPerPage(Number(e.target.value))}
+              className={`rounded ${isDark ? 'bg-gray-700 text-gray-200 border-gray-600' : 'bg-white text-gray-700 border-gray-300'} text-sm px-2 py-1 focus:border-blue-500 focus:ring-blue-500`}
+            >
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+              <option value={200}>200</option>
+            </select>
+          </div>
+        </div>
+        
+        <div className="flex">
+          <nav className="flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            <button
+              onClick={() => loadPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={`relative inline-flex items-center px-2 py-2 rounded-l-md border text-sm font-medium ${
+                currentPage === 1 
+                  ? styles.pagination.disabled
+                  : styles.pagination.item
+              }`}
+            >
+              <span className="sr-only">Previous</span>
+              <i className="fas fa-chevron-left text-xs"></i>
+            </button>
+            
+            {pageNumbers.map((page, index) => (
+              <button
+                key={index}
+                onClick={() => page !== '...' && loadPage(page)}
+                disabled={page === '...'}
+                className={`relative inline-flex items-center px-3 py-2 border text-sm font-medium ${
+                  page === currentPage 
+                    ? styles.pagination.active
+                    : page === '...' 
+                      ? styles.pagination.disabled
+                      : styles.pagination.item
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            
+            <button
+              onClick={() => loadPage(currentPage + 1)}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className={`relative inline-flex items-center px-2 py-2 rounded-r-md border text-sm font-medium ${
+                currentPage === totalPages || totalPages === 0
+                  ? styles.pagination.disabled
+                  : styles.pagination.item
+              }`}
+            >
+              <span className="sr-only">Next</span>
+              <i className="fas fa-chevron-right text-xs"></i>
+            </button>
+          </nav>
+        </div>
+      </div>
+    );
+  };
+
+  // Key List in ListView mode
   const renderListView = () => {
     const sortedKeys = getSortedKeys();
     
     return (
-      <div className="h-full overflow-auto">
-        <table className="min-w-full">
-          <thead className="bg-gray-50 sticky top-0 z-10">
-            <tr>
-              <th className="w-10 py-3 px-3 text-left">
-                <input
-                  type="checkbox"
-                  checked={selectAll}
-                  onChange={handleSelectAllChange}
-                  className="rounded-sm bg-white border-gray-300 text-cyan-600 focus:ring-cyan-500 focus:ring-offset-gray-100"
-                />
-              </th>
-              <th 
-                className="py-3 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:text-gray-700"
-                onClick={() => toggleSort('name')}
-              >
-                <div className="flex items-center gap-2">
-                  Key
-                  {sortBy === 'name' && (
-                    <i className={`fas fa-sort-${sortDir === 'asc' ? 'up' : 'down'} text-cyan-500`}></i>
-                  )}
-                </div>
-              </th>
-              <th className="w-24 py-3 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type
-              </th>
-              <th className="w-20 py-3 px-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 bg-white">
-            {sortedKeys.length === 0 ? (
+      <div className="h-full flex flex-col">
+        <div className="keys-list-container flex-1 overflow-auto">
+          <table className="min-w-full border-collapse">
+            <thead className={`${styles.table.header} sticky top-0 z-10`}>
               <tr>
-                <td colSpan={4} className="py-8 text-center text-gray-500 italic">
-                  {pattern !== '*' 
-                    ? `No keys found matching pattern: ${pattern}` 
-                    : 'No keys found in the current database'}
-                </td>
-              </tr>
-            ) : (
-              sortedKeys.map((key) => (
-                <tr 
-                  key={key} 
-                  className={`hover:bg-gray-50 transition-colors ${
-                    selectedKey === key ? 'bg-cyan-50 border-l-2 border-cyan-500' : ''
-                  }`}
-                >
-                  <td className="py-2 px-3">
+                <th className="w-10 py-3 px-3 text-left">
+                  <label className="inline-flex">
                     <input
                       type="checkbox"
-                      checked={selectedKeys.has(key)}
-                      onChange={() => handleCheckboxChange(key)}
-                      onClick={(e) => e.stopPropagation()}
-                      className="rounded-sm bg-white border-gray-300 text-cyan-600 focus:ring-cyan-500 focus:ring-offset-gray-100"
+                      checked={selectAll}
+                      onChange={handleSelectAllChange}
+                      className={`rounded-sm ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} text-blue-600 focus:ring-blue-500`}
                     />
-                  </td>
-                  <td 
-                    className="py-2 px-3 font-mono text-sm cursor-pointer truncate max-w-xs text-gray-800"
-                    onClick={() => handleKeySelect(key)}
-                  >
-                    {key}
-                  </td>
-                  <td className="py-2 px-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      {getTypeIcon(keyType(key))}
-                      <span className="text-gray-600 text-xs uppercase">
-                        {keyType(key) || '...'}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-2 px-3 text-right">
-                    <div className="flex justify-end gap-1">
-                      <button
-                        onClick={() => handleKeySelect(key)}
-                        className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 text-cyan-600 transition-colors"
-                        title="View key details"
-                      >
-                        <i className="fas fa-eye text-xs"></i>
-                      </button>
-                      <button
-                        onClick={() => deleteKey(key)}
-                        className="p-1.5 rounded-md bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 transition-colors"
-                        title="Delete key"
-                      >
-                        <i className="fas fa-trash text-xs"></i>
-                      </button>
+                    <span className="sr-only">Select all</span>
+                  </label>
+                </th>
+                <th 
+                  className="py-3 px-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer"
+                  onClick={() => toggleSort('name')}
+                >
+                  <div className="flex items-center gap-2">
+                    <span>Key</span>
+                    {sortBy === 'name' && (
+                      <i className={`fas fa-sort-${sortDir === 'asc' ? 'up' : 'down'} ${styles.text.accent}`}></i>
+                    )}
+                  </div>
+                </th>
+                <th className="w-24 py-3 px-3 text-left text-xs font-medium uppercase tracking-wider">
+                  Type
+                </th>
+                <th className="w-20 py-3 px-3 text-right text-xs font-medium uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className={`divide-y ${styles.divider}`}>
+              {sortedKeys.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center">
+                    <div className="flex flex-col items-center justify-center p-6">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isDark ? 'bg-gray-800' : 'bg-gray-100'} mb-3`}>
+                        <i className={`fas fa-search ${styles.text.secondary} text-xl`}></i>
+                      </div>
+                      <p className={`${styles.text.primary} font-medium mb-1`}>No keys found</p>
+                      <p className={`${styles.text.secondary} text-sm`}>
+                        {pattern !== '*' 
+                          ? `No keys match the pattern "${pattern}"`
+                          : 'No keys found in the current database'}
+                      </p>
                     </div>
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                sortedKeys.map((key) => (
+                  <tr 
+                    key={key} 
+                    className={`${styles.table.row} transition-colors ${selectedKey === key ? `${styles.item.selected} border-l-2` : ''}`}
+                  >
+                    <td className="py-2 px-3">
+                      <label className="inline-flex">
+                        <input
+                          type="checkbox"
+                          checked={selectedKeys.has(key)}
+                          onChange={() => handleCheckboxChange(key)}
+                          onClick={(e) => e.stopPropagation()}
+                          className={`rounded-sm ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} text-blue-600 focus:ring-blue-500`}
+                        />
+                        <span className="sr-only">Select {key}</span>
+                      </label>
+                    </td>
+                    <td 
+                      className={`py-2 px-3 font-mono text-sm cursor-pointer truncate max-w-xs ${styles.text.primary}`}
+                      onClick={() => handleKeySelect(key)}
+                    >
+                      {key}
+                    </td>
+                    <td className="py-2 px-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        {getTypeIcon(keyType(key))}
+                        <span className={`text-xs uppercase ${styles.text.secondary}`}>
+                          {keyType(key) || 'Key'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-2 px-3 text-right">
+                      <div className="flex justify-end gap-1">
+                        <button
+                          onClick={() => handleKeySelect(key)}
+                          className={`p-1.5 rounded-md ${isDark 
+                            ? 'bg-gray-700 hover:bg-gray-600 text-blue-400' 
+                            : 'bg-gray-100 hover:bg-gray-200 text-blue-600'
+                          } transition-colors`}
+                          title="View key details"
+                        >
+                          <i className="fas fa-eye text-xs"></i>
+                        </button>
+                        <button
+                          onClick={() => deleteKey(key)}
+                          className={`p-1.5 rounded-md ${isDark 
+                            ? 'bg-gray-700 hover:bg-red-900/50 text-gray-400 hover:text-red-400' 
+                            : 'bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600'
+                          } transition-colors`}
+                          title="Delete key"
+                        >
+                          <i className="fas fa-trash text-xs"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        {renderPagination()}
       </div>
     );
   };
 
+  // Grid view for keys
   const renderGridView = () => {
     const sortedKeys = getSortedKeys();
     
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-3">
-        {sortedKeys.length === 0 ? (
-          <div className="col-span-full py-8 text-center text-gray-500 italic">
-            {pattern !== '*' 
-              ? `No keys found matching pattern: ${pattern}` 
-              : 'No keys found in the current database'}
-          </div>
-        ) : (
-          sortedKeys.map((key) => (
-            <div 
-              key={key}
-              className={`relative group p-3 rounded-lg border transition-all ${
-                selectedKey === key 
-                  ? 'bg-cyan-50 border-cyan-500' 
-                  : 'bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm'
-              }`}
-            >
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                <button
-                  onClick={() => handleKeySelect(key)}
-                  className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 text-cyan-600 transition-colors"
-                  title="View key details"
-                >
-                  <i className="fas fa-eye text-xs"></i>
-                </button>
-                <button
-                  onClick={() => deleteKey(key)}
-                  className="p-1.5 rounded-md bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 transition-colors"
-                  title="Delete key"
-                >
-                  <i className="fas fa-trash text-xs"></i>
-                </button>
+      <div className="h-full flex flex-col">
+        <div className="keys-list-container flex-1 overflow-auto p-3">
+          {sortedKeys.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full p-6">
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center ${isDark ? 'bg-gray-800' : 'bg-gray-100'} mb-4`}>
+                <i className={`fas fa-search ${styles.text.secondary} text-2xl`}></i>
               </div>
-              
-              <div className="absolute top-2 left-2">
-                <input
-                  type="checkbox"
-                  checked={selectedKeys.has(key)}
-                  onChange={() => handleCheckboxChange(key)}
-                  className="rounded-sm bg-white border-gray-300 text-cyan-600 focus:ring-cyan-500 focus:ring-offset-gray-100"
-                />
-              </div>
-              
-              <div 
-                className="pt-6 pb-2 cursor-pointer"
-                onClick={() => handleKeySelect(key)}
-              >
-                <div className="text-center my-2">
-                  {getTypeIcon(keyType(key))}
-                  <div className="text-xs uppercase text-gray-500 mt-1">
-                    {keyType(key) || '...'}
+              <p className={`${styles.text.primary} font-medium text-lg mb-2`}>No keys found</p>
+              <p className={`${styles.text.secondary} text-center max-w-md`}>
+                {pattern !== '*' 
+                  ? `No keys match the pattern "${pattern}"`
+                  : 'No keys found in the current database'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {sortedKeys.map((key) => (
+                <div 
+                  key={key}
+                  className={`relative rounded-lg ${styles.item.base} ${styles.item.hover} transition-all ${
+                    selectedKey === key ? styles.item.selected : styles.panel
+                  }`}
+                >
+                  {/* Selection checkbox */}
+                  <div className="absolute top-2 left-2 z-10">
+                    <label className="inline-flex">
+                      <input
+                        type="checkbox"
+                        checked={selectedKeys.has(key)}
+                        onChange={() => handleCheckboxChange(key)}
+                        className={`rounded-sm ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} text-blue-600 focus:ring-blue-500`}
+                      />
+                      <span className="sr-only">Select {key}</span>
+                    </label>
+                  </div>
+                  
+                  {/* Action buttons */}
+                  <div className="absolute top-2 right-2 z-10 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => handleKeySelect(key)}
+                      className={`p-1.5 rounded-md ${isDark 
+                        ? 'bg-gray-700/90 hover:bg-gray-600/90 text-blue-400' 
+                        : 'bg-gray-100/90 hover:bg-gray-200/90 text-blue-600'
+                      } transition-colors`}
+                      title="View key details"
+                    >
+                      <i className="fas fa-eye text-xs"></i>
+                    </button>
+                    <button
+                      onClick={() => deleteKey(key)}
+                      className={`p-1.5 rounded-md ${isDark 
+                        ? 'bg-gray-700/90 hover:bg-red-900/40 text-gray-400 hover:text-red-400' 
+                        : 'bg-gray-100/90 hover:bg-red-100/90 text-gray-600 hover:text-red-600'
+                      } transition-colors`}
+                      title="Delete key"
+                    >
+                      <i className="fas fa-trash text-xs"></i>
+                    </button>
+                  </div>
+                  
+                  {/* Card content */}
+                  <div 
+                    className="p-4 pt-8 cursor-pointer group"
+                    onClick={() => handleKeySelect(key)}
+                  >
+                    <div className="flex flex-col items-center mb-3">
+                      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                        isDark ? 'bg-gray-700' : 'bg-gray-100'
+                      } mb-3 group-hover:scale-110 transition-transform`}>
+                        {getTypeIcon(keyType(key))}
+                      </div>
+                      <div className={`text-xs uppercase ${styles.text.secondary}`}>
+                        {keyType(key) || 'Key'}
+                      </div>
+                    </div>
+                    
+                    <div className={`font-mono text-sm truncate mt-3 pt-3 border-t ${styles.divider} text-center ${styles.text.primary}`} 
+                      title={key}>
+                      {key}
+                    </div>
                   </div>
                 </div>
-                
-                <div className="font-mono text-sm truncate mt-2 pt-2 border-t border-gray-200 text-center text-gray-800">
-                  {key}
-                </div>
-              </div>
+              ))}
             </div>
-          ))
-        )}
+          )}
+        </div>
+        {renderPagination()}
       </div>
     );
   };
 
+  // If not connected, show a connection prompt
+  if (!isConnected) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className={`text-center p-8 max-w-md ${styles.panel} rounded-xl shadow-lg`}>
+          <div className={`w-20 h-20 mx-auto mb-6 flex items-center justify-center rounded-full ${styles.bg.accent} bg-opacity-10`}>
+            <i className={`fas fa-database ${styles.text.accent} text-4xl`}></i>
+          </div>
+          <h2 className={`text-xl font-bold mb-4 ${styles.text.primary}`}>Not Connected</h2>
+          <p className={`mb-6 ${styles.text.secondary}`}>
+            Please connect to a Redis server to explore keys.
+          </p>
+          <button className={`px-6 py-2 ${styles.button.primary} rounded-lg shadow-lg`}>
+            <i className="fas fa-plug mr-2"></i>Connect
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-full">
-      <div className="w-1/2 flex flex-col border-r border-gray-200">
-        <div className="bg-white sticky top-0 z-10 p-3 border-b border-gray-200 flex flex-col gap-3">
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                <i className="fas fa-search"></i>
-              </span>
+    <div className={`h-full flex bg-opacity-50 ${styles.container}`}>
+      {/* Keys List Panel */}
+      <div className={`w-1/2 flex flex-col ${styles.panel} border-r ${styles.border}`}>
+        {/* Search and Controls Header */}
+        <div className={`${styles.panel} sticky top-0 z-10 border-b ${styles.border}`}>
+          {/* Search Bar */}
+          <div className="p-3">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i className={`fas fa-search ${styles.search.icon}`}></i>
+              </div>
               <input
                 ref={searchInputRef}
                 type="text"
                 value={pattern}
                 onChange={handleSearchChange}
                 placeholder="Search keys (e.g., user:*)"
-                className="w-full pl-10 pr-3 py-2 bg-white text-gray-800 border border-gray-300 rounded-md focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                className={`block w-full pl-10 pr-10 py-2 rounded-lg ${styles.search.input} text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow`}
               />
               {pattern !== '*' && (
                 <button 
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-800"
+                  className={`absolute inset-y-0 right-0 flex items-center pr-3 ${styles.search.icon} hover:${styles.text.accent}`}
                   onClick={() => {
                     setPattern('*');
-                    fetchKeys('*');
+                    fetchKeys('*', 1, keysPerPage);
                   }}
                   title="Clear search"
                 >
@@ -503,25 +775,18 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
                 </button>
               )}
             </div>
-            
-            <button
-              onClick={() => fetchKeys(pattern)}
-              className="px-3 py-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 rounded flex items-center transition-colors"
-              title="Search keys"
-            >
-              <i className="fas fa-search"></i>
-            </button>
           </div>
           
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <div className="flex bg-gray-100 rounded-md p-1">
+          {/* Toolbar */}
+          <div className="px-3 pb-3 flex justify-between items-center">
+            {/* Left Side Controls */}
+            <div className="flex items-center space-x-3">
+              <div className={`flex rounded-lg overflow-hidden ${isDark ? 'bg-gray-700' : 'bg-gray-100'} text-sm`}>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded ${
-                    viewMode === 'list' 
-                      ? 'bg-white text-cyan-600 shadow-sm' 
-                      : 'text-gray-500 hover:text-gray-700'
+                  className={`px-2.5 py-1.5 transition-colors ${viewMode === 'list' 
+                    ? isDark ? 'bg-gray-600 text-blue-400' : 'bg-white text-blue-600 shadow-sm' 
+                    : isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
                   }`}
                   title="List view"
                 >
@@ -529,41 +794,61 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
                 </button>
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded ${
-                    viewMode === 'grid' 
-                      ? 'bg-white text-cyan-600 shadow-sm' 
-                      : 'text-gray-500 hover:text-gray-700'
+                  className={`px-2.5 py-1.5 transition-colors ${viewMode === 'grid' 
+                    ? isDark ? 'bg-gray-600 text-blue-400' : 'bg-white text-blue-600 shadow-sm' 
+                    : isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
                   }`}
                   title="Grid view"
                 >
                   <i className="fas fa-th-large"></i>
                 </button>
               </div>
-              <div className="text-sm text-gray-500">{keys.length} keys</div>
+              
+              <div className={`text-sm ${styles.text.secondary}`}>
+                {totalKeys} keys
+              </div>
             </div>
             
+            {/* Bulk Actions */}
             {selectedKeys.size > 0 && (
               <button
                 onClick={deleteSelectedKeys}
-                className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded text-sm flex items-center gap-1.5 transition-colors"
+                className={`px-3 py-1.5 rounded-lg text-sm flex items-center gap-1.5 ${styles.button.danger}`}
               >
                 <i className="fas fa-trash"></i>
-                Delete Selected ({selectedKeys.size})
+                Delete ({selectedKeys.size})
               </button>
             )}
           </div>
         </div>
         
+        {/* Keys List */}
         {viewMode === 'list' ? renderListView() : renderGridView()}
       </div>
 
-      <div className="w-1/2">
+      {/* Key Details Panel */}
+      <div className={`w-1/2 ${isDark ? 'bg-gray-800/50' : 'bg-gray-50/50'}`}>
         {selectedKey && keyDetails ? (
-          <KeyDetails keyDetails={keyDetails} onDelete={deleteKey} />
+          <KeyDetails keyDetails={keyDetails} onDelete={deleteKey} theme={theme} />
         ) : (
-          <div className="h-full flex flex-col items-center justify-center text-gray-500 bg-gray-50">
-            <i className="fas fa-database text-5xl mb-4 opacity-30"></i>
-            <div>Select a key to view details</div>
+          <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+            <div className={`w-20 h-20 flex items-center justify-center rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} mb-6`}>
+              <i className={`fas fa-database text-3xl ${isDark ? 'text-gray-500' : 'text-gray-400'}`}></i>
+            </div>
+            <h2 className={`text-xl font-semibold mb-2 ${styles.text.primary}`}>No key selected</h2>
+            <p className={`mb-6 max-w-md ${styles.text.secondary}`}>
+              {keys.length > 0 
+                ? 'Select a key from the list to view its details' 
+                : pattern !== '*' 
+                  ? 'Try searching with a different pattern'
+                  : 'No keys found in the current database'}
+            </p>
+            {keys.length > 0 && (
+              <div className="flex justify-center mt-2">
+                <i style={{marginTop: '5px'}} className={`fas fa-arrow-left ${styles.text.accent} mr-2`}></i>
+                <span className={styles.text.secondary}>Select a key from the list</span>
+              </div>
+            )}
           </div>
         )}
       </div>

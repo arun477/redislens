@@ -9,7 +9,8 @@ const Sidebar = ({
   updateConnectionConfig,
   showToast,
   setIsLoading,
-  isCollapsed
+  isCollapsed,
+  theme
 }) => {
   const [formData, setFormData] = useState(connectionConfig);
   const [showConnectionForm, setShowConnectionForm] = useState(false);
@@ -53,191 +54,208 @@ const Sidebar = ({
     }
   };
 
-  const getNavItemClass = (view) => {
-    let baseClass = "relative sidebar-item transition-all duration-200 rounded-md";
-    
-    if (isCollapsed) {
-      baseClass += " w-10 h-10 mx-auto mb-4 flex items-center justify-center";
-    } else {
-      baseClass += " p-2 mx-3 mb-2 flex items-center";
+  // Navigation items definition
+  const navItems = [
+    {
+      id: 'keys-view',
+      label: 'Keys Explorer',
+      icon: 'database'
+    },
+    {
+      id: 'info-view',
+      label: 'Server Dashboard',
+      icon: 'chart-line'
+    },
+    {
+      id: 'command-view',
+      label: 'Command Terminal',
+      icon: 'terminal'
     }
-    
-    if (activeView === view) {
-      baseClass += " active";
-    }
-    
-    return baseClass;
+  ];
+
+  // Dark mode styles
+  const darkStyles = {
+    sidebar: "bg-gray-900",
+    header: "bg-gray-900",
+    logo: "text-white",
+    accent: "text-orange-300",
+    navItem: "text-gray-400 hover:text-white",
+    activeNavItem: "bg-gray-800 text-white border-l-2 border-cyan-500",
+    divider: "border-gray-800",
+    input: "bg-gray-800 border-gray-700 text-gray-200",
+    button: "bg-cyan-600 hover:bg-cyan-700 text-white",
+    status: isConnected ? "text-cyan-400" : "text-yellow-400",
+    statusIndicator: isConnected ? "bg-cyan-500" : "bg-yellow-500"
   };
 
-  const getNavItemTooltip = (label) => {
-    if (!isCollapsed) return null;
-    
-    return (
-      <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
-        {label}
-      </div>
-    );
+  // Light mode styles
+  const lightStyles = {
+    sidebar: "bg-white",
+    header: "bg-white",
+    logo: "text-gray-800",
+    accent: "text-orange-500",
+    navItem: "text-gray-500 hover:text-gray-900",
+    activeNavItem: "bg-cyan-50 text-cyan-700 border-l-2 border-cyan-500",
+    divider: "border-gray-100",
+    input: "bg-white border-gray-300 text-gray-800",
+    button: "bg-cyan-600 hover:bg-cyan-700 text-white",
+    status: isConnected ? "text-cyan-600" : "text-yellow-600",
+    statusIndicator: isConnected ? "bg-cyan-500" : "bg-yellow-500"
   };
+
+  // Use appropriate style based on theme
+  const styles = theme === 'dark' ? darkStyles : lightStyles;
 
   return (
-    <div className={`${isCollapsed ? 'w-16' : 'w-64'} sidebar-metallic h-screen flex flex-col z-20 transition-all duration-300`}>
-      <div className={`p-4 border-b border-gray-800 flex ${isCollapsed ? 'justify-center' : 'justify-between'} items-center`}>
-        {!isCollapsed && (
-          <div className="text-xl font-bold flex items-center gap-2">
-            <div className="relative w-6 h-6 flex items-center justify-center">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 7.8c0-1.68 0-2.52.327-3.162a3 3 0 0 1 1.311-1.311C6.28 3 7.12 3 8.8 3h6.4c1.68 0 2.52 0 3.162.327a3 3 0 0 1 1.311 1.311C20 5.28 20 6.12 20 7.8v8.4c0 1.68 0 2.52-.327 3.162a3 3 0 0 1-1.311 1.311C17.72 21 16.88 21 15.2 21H8.8c-1.68 0-2.52 0-3.162-.327a3 3 0 0 1-1.311-1.311C4 18.72 4 17.88 4 16.2V7.8z" 
-                  fill="url(#gradient)" />
-                <path d="M9 8h6M9 12h6M9 16h4" stroke="rgba(0,0,0,0.3)" strokeWidth="1.5" strokeLinecap="round" />
-                <defs>
-                  <linearGradient id="gradient" x1="4" y1="3" x2="20" y2="21" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#00FFFF" />
-                    <stop offset="1" stopColor="#0080FF" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-            <span className="bg-gradient-to-r from-cyan-400 to-blue-500 text-transparent bg-clip-text">Redis</span>
-          </div>
-        )}
-        
+    <div className={`${styles.sidebar} h-screen flex flex-col ${isCollapsed ? 'w-16' : 'w-64'} 
+      shadow-md transition-all duration-200 z-20`}>
+      
+      {/* Logo Section */}
+      <div className={`${styles.header} py-5 flex items-center justify-center border-b ${styles.divider}`}>
         {isCollapsed ? (
-          <div className="relative w-6 h-6 flex items-center justify-center">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 7.8c0-1.68 0-2.52.327-3.162a3 3 0 0 1 1.311-1.311C6.28 3 7.12 3 8.8 3h6.4c1.68 0 2.52 0 3.162.327a3 3 0 0 1 1.311 1.311C20 5.28 20 6.12 20 7.8v8.4c0 1.68 0 2.52-.327 3.162a3 3 0 0 1-1.311 1.311C17.72 21 16.88 21 15.2 21H8.8c-1.68 0-2.52 0-3.162-.327a3 3 0 0 1-1.311-1.311C4 18.72 4 17.88 4 16.2V7.8z" 
-                fill="url(#gradient)" />
-              <path d="M9 8h6M9 12h6M9 16h4" stroke="rgba(0,0,0,0.3)" strokeWidth="1.5" strokeLinecap="round" />
-              <defs>
-                <linearGradient id="gradient" x1="4" y1="3" x2="20" y2="21" gradientUnits="userSpaceOnUse">
-                  <stop stopColor="#00FFFF" />
-                  <stop offset="1" stopColor="#0080FF" />
-                </linearGradient>
-              </defs>
-            </svg>
+          <div className={`w-10 h-10 flex items-center justify-center rounded-lg  ${
+            theme === 'dark' ? 'from-cyan-800 to-cyan-600' : 'from-cyan-600 to-cyan-400'
+          } shadow-lg`}>
+            <span className="text-white text-xl" role="img" aria-label="Lobster">🦞</span>
           </div>
         ) : (
-          <button 
-            onClick={() => setShowConnectionForm(!showConnectionForm)}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-700 text-cyan-400 hover:bg-gray-600 transition-colors"
-          >
-            <i className={`fas fa-${showConnectionForm ? 'times' : 'plug'}`}></i>
-          </button>
+          <div className="flex items-center">
+            <div className={`w-10 h-10 flex items-center justify-center rounded-lg  ${
+              theme === 'dark' ? 'from-cyan-800 to-cyan-600' : 'from-cyan-600 to-cyan-400'
+            } shadow-lg mr-0`}>
+              <span className="text-white text-xl" role="img" aria-label="Lobster">🦞</span>
+            </div>
+            <div>
+              <span className={`text-lg font-medium ${styles.logo}`}>Redis</span>
+              <span className={`text-lg font-bold ${styles.accent}`} style={{color:'#C42B1C'}}> Lens</span>
+            </div>
+          </div>
         )}
       </div>
-
-      {!isCollapsed && showConnectionForm && (
-        <div className="p-4 border-b border-gray-800 space-y-3 bg-gray-800/30">
-          <div className="space-y-1">
-            <label className="text-xs uppercase tracking-wider text-gray-400">Host</label>
-            <input
-              type="text"
-              name="host"
-              value={formData.host}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 bg-gray-700/70 text-white border border-gray-600/50 rounded-md focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
-              placeholder="localhost"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs uppercase tracking-wider text-gray-400">Port</label>
-              <input
-                type="number"
-                name="port"
-                value={formData.port}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 bg-gray-700/70 text-white border border-gray-600/50 rounded-md focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
-              />
-            </div>
-            
-            <div className="space-y-1">
-              <label className="text-xs uppercase tracking-wider text-gray-400">DB</label>
-              <input
-                type="number"
-                name="db"
-                value={formData.db}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 bg-gray-700/70 text-white border border-gray-600/50 rounded-md focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-xs uppercase tracking-wider text-gray-400">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 bg-gray-700/70 text-white border border-gray-600/50 rounded-md focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
-              placeholder="Optional"
-            />
-          </div>
-
-          <button
-            onClick={testConnection}
-            className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white py-2 px-4 rounded-md flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-cyan-900/20"
+      
+      {/* Connection Button - Only show in expanded mode */}
+      {!isCollapsed && (
+        <div className="px-4 py-3">
+          <button 
+            onClick={() => setShowConnectionForm(!showConnectionForm)}
+                          className={`w-full py-2 px-3 rounded flex items-center justify-center gap-2 
+              ${isConnected ? 'bg-opacity-10 border border-opacity-20' : ''} 
+              ${isConnected ? 
+                (theme === 'dark' ? 'bg-cyan-900 border-cyan-700 text-cyan-400' : 'bg-cyan-50 border-cyan-200 text-cyan-700') : 
+                styles.button} 
+              transition-colors`}
           >
-            <i className="fas fa-plug"></i> 
-            {isConnected ? 'Reconnect' : 'Connect'}
+            <i className={`fas ${isConnected ? 'fa-link' : 'fa-plug'}`}></i>
+            <span>{isConnected ? 'Connected' : 'Connect'}</span>
+            {isConnected && <i className="fas fa-chevron-down text-xs ml-auto"></i>}
           </button>
         </div>
       )}
+      
+      {/* Connection Form */}
+      {!isCollapsed && showConnectionForm && (
+        <div className={`px-4 py-3 border-b ${styles.divider}`}>
+          <div className="space-y-3">
+            <div>
+              <label className={`block text-xs font-medium mb-1 ${styles.navItem}`}>Host</label>
+              <input
+                type="text"
+                name="host"
+                value={formData.host}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 rounded text-sm ${styles.input} border focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500`}
+                placeholder="localhost"
+              />
+            </div>
 
-      <nav className="flex-1 py-6">
-        <div className="group" onClick={() => setActiveView('keys-view')}>
-          <div className={getNavItemClass('keys-view')}>
-            <div className="relative flex items-center justify-center w-6 h-6">
-              <i className="fas fa-database text-lg absolute opacity-50 -ml-0.5 -mt-0.5"></i>
-              <i className="fas fa-search text-xs absolute -mr-1 -mb-1.5"></i>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={`block text-xs font-medium mb-1 ${styles.navItem}`}>Port</label>
+                <input
+                  type="number"
+                  name="port"
+                  value={formData.port}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 rounded text-sm ${styles.input} border focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500`}
+                />
+              </div>
+              
+              <div>
+                <label className={`block text-xs font-medium mb-1 ${styles.navItem}`}>DB</label>
+                <input
+                  type="number"
+                  name="db"
+                  value={formData.db}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 rounded text-sm ${styles.input} border focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500`}
+                />
+              </div>
             </div>
-            {!isCollapsed && <span className="ml-3 flex-1">Keys Explorer</span>}
-            {getNavItemTooltip('Keys Explorer')}
+
+            <div>
+              <label className={`block text-xs font-medium mb-1 ${styles.navItem}`}>Password</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className={`w-full px-3 py-2 rounded text-sm ${styles.input} border focus:ring-1 focus:ring-red-500 focus:border-red-500`}
+                placeholder="Optional"
+              />
+            </div>
+
+            <button
+              onClick={testConnection}
+              className={`w-full py-2 px-4 rounded ${styles.button} transition-colors`}
+            >
+              {isConnected ? 'Reconnect' : 'Connect'}
+            </button>
           </div>
+        </div>
+      )}
+
+      {/* Navigation */}
+      <nav className="flex-1 py-4">
+        <div className={`${!isCollapsed ? 'px-3 mb-2 text-xs font-medium uppercase' : 'sr-only'} ${styles.navItem}`}>
+          Navigation
         </div>
         
-        <div className="group" onClick={() => setActiveView('info-view')}>
-          <div className={getNavItemClass('info-view')}>
-            <div className="flex items-center justify-center w-6 h-6">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
-                <path d="M4 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5z" fill="currentColor" opacity="0.7" />
-                <path d="M14 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V5z" fill="currentColor" opacity="0.9" />
-                <path d="M4 15a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-4z" fill="currentColor" opacity="0.9" />
-                <path d="M14 15a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-4z" fill="currentColor" opacity="0.7" />
-                <path d="M13 8L18 16M8 10l6 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </div>
-            {!isCollapsed && <span className="ml-3 flex-1">Server Dashboard</span>}
-            {getNavItemTooltip('Server Dashboard')}
+        {navItems.map((item) => (
+          <div 
+            key={item.id}
+            onClick={() => setActiveView(item.id)}
+            className={`
+              ${isCollapsed ? 'mx-2 justify-center' : 'mx-3 px-3'} 
+              cursor-pointer flex items-center py-2.5 my-1 rounded
+              transition-colors duration-150
+              ${activeView === item.id ? styles.activeNavItem : styles.navItem}
+            `}
+            title={isCollapsed ? item.label : null}
+          >
+            <i className={`fas fa-${item.icon} ${isCollapsed ? 'text-lg' : 'text-sm w-5'}`}></i>
+            
+            {!isCollapsed && (
+              <span className="ml-3 text-sm">{item.label}</span>
+            )}
           </div>
-        </div>
-        
-        <div className="group" onClick={() => setActiveView('command-view')}>
-          <div className={getNavItemClass('command-view')}>
-            <div className="flex items-center justify-center w-6 h-6">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
-                <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" />
-                <path d="M7 10L9.5 12.5L7 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M11.5 15h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </div>
-            {!isCollapsed && <span className="ml-3 flex-1">Command Terminal</span>}
-            {getNavItemTooltip('Command Terminal')}
-          </div>
-        </div>
+        ))}
       </nav>
 
-      <div className="p-3 border-t border-gray-800/50 flex items-center">
-        <div className={`flex items-center ${isCollapsed ? 'justify-center w-full' : 'gap-2'}`}>
-          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-cyan-400 animate-pulse' : 'bg-amber-400'}`}></div>
-          {!isCollapsed && (
-            <span className={`text-sm ${isConnected ? 'text-cyan-400' : 'text-amber-400'}`}>
-              {isConnected ? 'Connected' : 'Disconnected'}
-            </span>
-          )}
+      {/* Status Indicator - Minimal version */}
+      {isCollapsed ? (
+        <div className="py-5 flex justify-center">
+          <div className={`w-2 h-2 rounded-full ${styles.statusIndicator}`}></div>
         </div>
-      </div>
+      ) : (
+        <div className={`px-4 py-3 border-t ${styles.divider} mt-auto`}>
+          <div className={`flex items-center ${styles.status} text-sm`}>
+            <div className={`w-2 h-2 rounded-full mr-2 ${styles.statusIndicator}`}></div>
+            <span>{isConnected ? 'Connected' : 'Disconnected'}</span>
+            
+            <span className="ml-auto text-xs opacity-50">v1.0.0</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
