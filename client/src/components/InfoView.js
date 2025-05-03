@@ -12,12 +12,12 @@ const InfoView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
   const [autoRefresh, setAutoRefresh] = useState(false);
   
   const chartColors = [
-    '#00FFFF', // Cyan
-    '#FF5A5F', // Red
-    '#88B04B', // Green
-    '#FFDC5E', // Yellow
-    '#6A5ACD', // Purple
-    '#F49F0A', // Orange
+    '#0891B2', // Cyan
+    '#B91C1C', // Red
+    '#16A34A', // Green
+    '#CA8A04', // Yellow
+    '#7E22CE', // Purple
+    '#C2410C', // Orange
   ];
   
   const refreshIntervals = [
@@ -123,8 +123,8 @@ const InfoView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-black/90 p-2 border border-gray-800 rounded text-sm">
-          <p className="text-gray-400">{label}</p>
+        <div className="bg-white p-2 border border-gray-200 rounded text-sm shadow-md">
+          <p className="text-gray-500">{label}</p>
           {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color }}>
               {entry.name}: {entry.value}
@@ -164,11 +164,11 @@ const InfoView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
 
   if (!isConnected) {
     return (
-      <div className="flex items-center justify-center h-full bg-black/20 backdrop-blur-sm">
-        <div className="text-center p-8 max-w-md">
-          <i className="fas fa-server text-gray-500 text-5xl mb-4"></i>
-          <h2 className="text-xl font-semibold text-gray-300 mb-2">Not Connected</h2>
-          <p className="text-gray-500">
+      <div className="flex items-center justify-center h-full bg-gray-50">
+        <div className="text-center p-8 max-w-md bg-white border border-gray-200 rounded-lg shadow-sm">
+          <i className="fas fa-server text-gray-400 text-5xl mb-4"></i>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Not Connected</h2>
+          <p className="text-gray-600">
             Please connect to a Redis server to view server information and statistics.
           </p>
         </div>
@@ -185,21 +185,21 @@ const InfoView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-          <i className="fas fa-chart-line text-cyan-500"></i>
+        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+          <i className="fas fa-chart-line text-cyan-600"></i>
           Redis Server Dashboard
         </h1>
         
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-black/30 rounded-md p-1 border border-gray-800/50">
+          <div className="flex items-center gap-1 bg-gray-100 rounded-md p-1 border border-gray-200">
             {refreshIntervals.map(interval => (
               <button
                 key={interval.value}
                 onClick={() => toggleAutoRefresh(interval.value)}
                 className={`px-3 py-1 rounded text-sm ${
                   (interval.value === 0 && !autoRefresh) || (autoRefresh && refreshInterval && interval.value === refreshInterval._idleTimeout)
-                    ? 'bg-cyan-900/50 text-cyan-400'
-                    : 'text-gray-400 hover:text-gray-300'
+                    ? 'bg-white text-cyan-700 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-800'
                 }`}
               >
                 {interval.label}
@@ -209,7 +209,7 @@ const InfoView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
           
           <button
             onClick={fetchInfo}
-            className="px-3 py-2 bg-cyan-900/30 hover:bg-cyan-900/50 text-cyan-400 rounded flex items-center gap-2 transition-colors"
+            className="px-3 py-2 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 rounded flex items-center gap-2 transition-colors"
           >
             <i className="fas fa-sync-alt"></i>
             Refresh
@@ -219,34 +219,34 @@ const InfoView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
       
       {/* Server Info Summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-black/30 backdrop-blur-sm border border-gray-800/40 rounded-lg p-4 shadow-lg">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
           <div className="text-xs uppercase text-gray-500 mb-1">Redis Version</div>
-          <div className="text-xl font-semibold flex items-center gap-2">
-            <i className="fas fa-tag text-cyan-500"></i>
+          <div className="text-xl font-semibold flex items-center gap-2 text-gray-800">
+            <i className="fas fa-tag text-cyan-600"></i>
             {info.redis_version || 'Unknown'}
           </div>
         </div>
         
-        <div className="bg-black/30 backdrop-blur-sm border border-gray-800/40 rounded-lg p-4 shadow-lg">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
           <div className="text-xs uppercase text-gray-500 mb-1">Uptime</div>
-          <div className="text-xl font-semibold flex items-center gap-2">
-            <i className="fas fa-clock text-cyan-500"></i>
+          <div className="text-xl font-semibold flex items-center gap-2 text-gray-800">
+            <i className="fas fa-clock text-cyan-600"></i>
             {formatUptime(info.uptime_in_seconds)}
           </div>
         </div>
         
-        <div className="bg-black/30 backdrop-blur-sm border border-gray-800/40 rounded-lg p-4 shadow-lg">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
           <div className="text-xs uppercase text-gray-500 mb-1">Connected Clients</div>
-          <div className="text-xl font-semibold flex items-center gap-2">
-            <i className="fas fa-users text-cyan-500"></i>
+          <div className="text-xl font-semibold flex items-center gap-2 text-gray-800">
+            <i className="fas fa-users text-cyan-600"></i>
             {info.connected_clients || '0'}
           </div>
         </div>
         
-        <div className="bg-black/30 backdrop-blur-sm border border-gray-800/40 rounded-lg p-4 shadow-lg">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
           <div className="text-xs uppercase text-gray-500 mb-1">Operations/sec</div>
-          <div className="text-xl font-semibold flex items-center gap-2">
-            <i className="fas fa-tachometer-alt text-cyan-500"></i>
+          <div className="text-xl font-semibold flex items-center gap-2 text-gray-800">
+            <i className="fas fa-tachometer-alt text-cyan-600"></i>
             {info.instantaneous_ops_per_sec || '0'}
           </div>
         </div>
@@ -254,34 +254,34 @@ const InfoView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
       
       {/* Operations Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div className="bg-black/30 backdrop-blur-sm border border-gray-800/40 rounded-lg p-4 shadow-lg">
-          <h3 className="text-lg font-semibold mb-4 border-b border-gray-800/50 pb-2">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4 border-b border-gray-200 pb-2 text-gray-800">
             Operations per Second
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={statsHistory.operations} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                <XAxis dataKey="timestamp" tick={{ fill: '#718096' }} />
-                <YAxis tick={{ fill: '#718096' }} />
+                <XAxis dataKey="timestamp" tick={{ fill: '#64748B' }} />
+                <YAxis tick={{ fill: '#64748B' }} />
                 <Tooltip content={<CustomTooltip />} />
-                <Line type="monotone" dataKey="ops" name="Ops/sec" stroke="#00FFFF" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="ops" name="Ops/sec" stroke="#0891B2" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
         
-        <div className="bg-black/30 backdrop-blur-sm border border-gray-800/40 rounded-lg p-4 shadow-lg">
-          <h3 className="text-lg font-semibold mb-4 border-b border-gray-800/50 pb-2">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4 border-b border-gray-200 pb-2 text-gray-800">
             Memory Usage (MB)
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={statsHistory.memory} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                <XAxis dataKey="timestamp" tick={{ fill: '#718096' }} />
-                <YAxis tick={{ fill: '#718096' }} />
+                <XAxis dataKey="timestamp" tick={{ fill: '#64748B' }} />
+                <YAxis tick={{ fill: '#64748B' }} />
                 <Tooltip content={<CustomTooltip />} />
-                <Line type="monotone" dataKey="used" name="Used Memory" stroke="#00FFFF" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="rss" name="RSS Memory" stroke="#FF5A5F" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="used" name="Used Memory" stroke="#0891B2" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="rss" name="RSS Memory" stroke="#B91C1C" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -290,45 +290,45 @@ const InfoView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
       
       {/* Memory Stats and Clients */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-black/30 backdrop-blur-sm border border-gray-800/40 rounded-lg p-4 shadow-lg lg:col-span-2">
-          <h3 className="text-lg font-semibold mb-4 border-b border-gray-800/50 pb-2">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm lg:col-span-2">
+          <h3 className="text-lg font-semibold mb-4 border-b border-gray-200 pb-2 text-gray-800">
             Memory Details
           </h3>
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-3 bg-black/40 rounded-lg border border-gray-800/50">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
               <div className="text-xs uppercase text-gray-500 mb-1">Used Memory</div>
-              <div className="text-lg font-semibold">{info.used_memory_human || '0B'}</div>
+              <div className="text-lg font-semibold text-gray-800">{info.used_memory_human || '0B'}</div>
             </div>
             
-            <div className="p-3 bg-black/40 rounded-lg border border-gray-800/50">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
               <div className="text-xs uppercase text-gray-500 mb-1">Peak Memory</div>
-              <div className="text-lg font-semibold">{info.used_memory_peak_human || '0B'}</div>
+              <div className="text-lg font-semibold text-gray-800">{info.used_memory_peak_human || '0B'}</div>
             </div>
             
-            <div className="p-3 bg-black/40 rounded-lg border border-gray-800/50">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
               <div className="text-xs uppercase text-gray-500 mb-1">RSS Memory</div>
-              <div className="text-lg font-semibold">{info.used_memory_rss_human || '0B'}</div>
+              <div className="text-lg font-semibold text-gray-800">{info.used_memory_rss_human || '0B'}</div>
             </div>
             
-            <div className="p-3 bg-black/40 rounded-lg border border-gray-800/50">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
               <div className="text-xs uppercase text-gray-500 mb-1">Memory Fragmentation</div>
-              <div className="text-lg font-semibold">{info.mem_fragmentation_ratio ? parseFloat(info.mem_fragmentation_ratio).toFixed(2) : 'N/A'}</div>
+              <div className="text-lg font-semibold text-gray-800">{info.mem_fragmentation_ratio ? parseFloat(info.mem_fragmentation_ratio).toFixed(2) : 'N/A'}</div>
             </div>
             
-            <div className="p-3 bg-black/40 rounded-lg border border-gray-800/50">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
               <div className="text-xs uppercase text-gray-500 mb-1">Max Memory</div>
-              <div className="text-lg font-semibold">{info.maxmemory_human || 'Unlimited'}</div>
+              <div className="text-lg font-semibold text-gray-800">{info.maxmemory_human || 'Unlimited'}</div>
             </div>
             
-            <div className="p-3 bg-black/40 rounded-lg border border-gray-800/50">
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
               <div className="text-xs uppercase text-gray-500 mb-1">Max Memory Policy</div>
-              <div className="text-lg font-semibold">{info.maxmemory_policy || 'N/A'}</div>
+              <div className="text-lg font-semibold text-gray-800">{info.maxmemory_policy || 'N/A'}</div>
             </div>
           </div>
         </div>
         
-        <div className="bg-black/30 backdrop-blur-sm border border-gray-800/40 rounded-lg p-4 shadow-lg">
-          <h3 className="text-lg font-semibold mb-4 border-b border-gray-800/50 pb-2">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4 border-b border-gray-200 pb-2 text-gray-800">
             Memory Distribution
           </h3>
           <div className="h-64 flex items-center justify-center">
@@ -359,74 +359,74 @@ const InfoView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
       
       {/* Stats Table */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        <div className="bg-black/30 backdrop-blur-sm border border-gray-800/40 rounded-lg p-4 shadow-lg">
-          <h3 className="text-lg font-semibold mb-4 border-b border-gray-800/50 pb-2">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4 border-b border-gray-200 pb-2 text-gray-800">
             CPU Stats
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-gray-400">System CPU</span>
-              <span>{info.used_cpu_sys || 'N/A'}</span>
+              <span className="text-gray-600">System CPU</span>
+              <span className="text-gray-800">{info.used_cpu_sys || 'N/A'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">User CPU</span>
-              <span>{info.used_cpu_user || 'N/A'}</span>
+              <span className="text-gray-600">User CPU</span>
+              <span className="text-gray-800">{info.used_cpu_user || 'N/A'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">System Children CPU</span>
-              <span>{info.used_cpu_sys_children || 'N/A'}</span>
+              <span className="text-gray-600">System Children CPU</span>
+              <span className="text-gray-800">{info.used_cpu_sys_children || 'N/A'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">User Children CPU</span>
-              <span>{info.used_cpu_user_children || 'N/A'}</span>
+              <span className="text-gray-600">User Children CPU</span>
+              <span className="text-gray-800">{info.used_cpu_user_children || 'N/A'}</span>
             </div>
           </div>
         </div>
         
-        <div className="bg-black/30 backdrop-blur-sm border border-gray-800/40 rounded-lg p-4 shadow-lg">
-          <h3 className="text-lg font-semibold mb-4 border-b border-gray-800/50 pb-2">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4 border-b border-gray-200 pb-2 text-gray-800">
             Connection Stats
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-gray-400">Connected Clients</span>
-              <span>{info.connected_clients || '0'}</span>
+              <span className="text-gray-600">Connected Clients</span>
+              <span className="text-gray-800">{info.connected_clients || '0'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Total Connections</span>
-              <span>{info.total_connections_received || '0'}</span>
+              <span className="text-gray-600">Total Connections</span>
+              <span className="text-gray-800">{info.total_connections_received || '0'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Rejected Connections</span>
-              <span>{info.rejected_connections || '0'}</span>
+              <span className="text-gray-600">Rejected Connections</span>
+              <span className="text-gray-800">{info.rejected_connections || '0'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Blocked Clients</span>
-              <span>{info.blocked_clients || '0'}</span>
+              <span className="text-gray-600">Blocked Clients</span>
+              <span className="text-gray-800">{info.blocked_clients || '0'}</span>
             </div>
           </div>
         </div>
         
-        <div className="bg-black/30 backdrop-blur-sm border border-gray-800/40 rounded-lg p-4 shadow-lg">
-          <h3 className="text-lg font-semibold mb-4 border-b border-gray-800/50 pb-2">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4 border-b border-gray-200 pb-2 text-gray-800">
             Persistence
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-gray-400">RDB Changes Since Last Save</span>
-              <span>{info.rdb_changes_since_last_save || 'N/A'}</span>
+              <span className="text-gray-600">RDB Changes Since Last Save</span>
+              <span className="text-gray-800">{info.rdb_changes_since_last_save || 'N/A'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Last Save Time</span>
-              <span>{info.rdb_last_save_time ? new Date(info.rdb_last_save_time * 1000).toLocaleString() : 'N/A'}</span>
+              <span className="text-gray-600">Last Save Time</span>
+              <span className="text-gray-800">{info.rdb_last_save_time ? new Date(info.rdb_last_save_time * 1000).toLocaleString() : 'N/A'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">AOF Enabled</span>
-              <span>{info.aof_enabled === '1' ? 'Yes' : 'No'}</span>
+              <span className="text-gray-600">AOF Enabled</span>
+              <span className="text-gray-800">{info.aof_enabled === '1' ? 'Yes' : 'No'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">RDB Save in Progress</span>
-              <span>{info.rdb_bgsave_in_progress === '1' ? 'Yes' : 'No'}</span>
+              <span className="text-gray-600">RDB Save in Progress</span>
+              <span className="text-gray-800">{info.rdb_bgsave_in_progress === '1' ? 'Yes' : 'No'}</span>
             </div>
           </div>
         </div>

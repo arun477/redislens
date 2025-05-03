@@ -1,0 +1,321 @@
+/**
+ * Redis Explorer - Premium Light Theme with Metallic Black Accents
+ */
+
+ :root {
+    /* Main Colors */
+    --white: #ffffff;
+    --off-white: #f9fafb;
+    --light-gray: #f3f4f6;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #475569;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --gray-900: #0f172a;
+    --black: #000000;
+  
+    /* Accent Colors */
+    --cyan-50: #ecfeff;
+    --cyan-100: #cffafe;
+    --cyan-200: #a5f3fc;
+    --cyan-300: #67e8f9;
+    --cyan-400: #22d3ee;
+    --cyan-500: #06b6d4;
+    --cyan-600: #0891b2;
+    --cyan-700: #0e7490;
+    --cyan-800: #155e75;
+    --cyan-900: #164e63;
+  
+    /* Status Colors */
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --info: #3b82f6;
+  
+    /* Data Type Colors */
+    --key-string: #0369a1; /* Blue */
+    --key-list: #15803d; /* Green */
+    --key-hash: #b91c1c; /* Red */
+    --key-set: #7e22ce; /* Purple */
+    --key-zset: #b45309; /* Amber */
+  }
+  
+  /* Base Theme Styles */
+  body {
+    background-color: var(--off-white);
+    color: var(--gray-800);
+  }
+  
+  /* Background Patterns */
+  .bg-pattern {
+    background-image: 
+      radial-gradient(rgba(14, 116, 144, 0.08) 1px, transparent 1px),
+      radial-gradient(rgba(14, 116, 144, 0.08) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: 0 0, 20px 20px;
+  }
+  
+  /* Metallic Sidebar */
+  .sidebar-metallic {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .sidebar-item {
+    color: var(--gray-400);
+    transition: all 0.2s ease;
+  }
+  
+  .sidebar-item:hover {
+    color: var(--white);
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  .sidebar-item.active {
+    color: var(--cyan-400);
+    background: linear-gradient(90deg, rgba(8, 145, 178, 0.2), transparent);
+    border-left: 2px solid var(--cyan-500);
+  }
+  
+  /* Light Cards */
+  .card-light {
+    background-color: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+  }
+  
+  .card-light:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+  }
+  
+  /* Tables */
+  .table-light {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  
+  .table-light thead {
+    background-color: var(--gray-100);
+  }
+  
+  .table-light th {
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  
+  .table-light td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  
+  .table-light tbody tr:hover {
+    background-color: var(--gray-50);
+  }
+  
+  /* Form Elements */
+  .input-light {
+    background-color: var(--white);
+    border: 1px solid var(--gray-300);
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--gray-900);
+    transition: all 0.2s ease;
+  }
+  
+  .input-light:focus {
+    border-color: var(--cyan-500);
+    box-shadow: 0 0 0 2px rgba(8, 145, 178, 0.1);
+    outline: none;
+  }
+  
+  /* Buttons */
+  .btn-primary {
+    background: linear-gradient(to right, var(--cyan-600), var(--cyan-700));
+    color: white;
+    border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .btn-primary:hover {
+    background: linear-gradient(to right, var(--cyan-500), var(--cyan-600));
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .btn-secondary {
+    background-color: var(--white);
+    color: var(--gray-700);
+    border: 1px solid var(--gray-300);
+    border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .btn-secondary:hover {
+    background-color: var(--gray-100);
+    color: var(--gray-900);
+  }
+  
+  .btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-icon-primary {
+    background-color: var(--cyan-50);
+    color: var(--cyan-600);
+  }
+  
+  .btn-icon-primary:hover {
+    background-color: var(--cyan-100);
+    color: var(--cyan-700);
+  }
+  
+  .btn-icon-secondary {
+    background-color: var(--gray-100);
+    color: var(--gray-700);
+  }
+  
+  .btn-icon-secondary:hover {
+    background-color: var(--gray-200);
+    color: var(--gray-900);
+  }
+  
+  .btn-icon-danger {
+    background-color: var(--gray-100);
+    color: var(--gray-600);
+  }
+  
+  .btn-icon-danger:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--error);
+  }
+  
+  /* Status Indicators */
+  .status-connected {
+    color: var(--cyan-600);
+    background-color: var(--cyan-50);
+    border: 1px solid var(--cyan-200);
+  }
+  
+  .status-disconnected {
+    color: var(--warning);
+    background-color: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+  
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: 3px;
+    transition: background 0.2s ease;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-400);
+  }
+  
+  /* Metallic Elements */
+  .metallic-black {
+    background: linear-gradient(145deg, #1e293b, #0f172a);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 
+      0 2px 6px rgba(0, 0, 0, 0.2),
+      inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  }
+  
+  .metallic-dark {
+    background: linear-gradient(145deg, #334155, #1e293b);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 
+      0 1px 3px rgba(0, 0, 0, 0.1),
+      inset 0 1px 1px rgba(255, 255, 255, 0.05);
+  }
+  
+  /* Glass Effect - Lighter version */
+  .glass-effect-light {
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Utility classes for gradient text */
+  .text-gradient-cyan {
+    background: linear-gradient(to right, var(--cyan-600), var(--cyan-700));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  
+  /* Animations - keep the same as dark theme */
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slide-in-right {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.05); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.8; }
+  }
+  
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out forwards;
+  }
+  
+  .animate-slide-in-right {
+    animation: slide-in-right 0.3s ease-out forwards;
+  }
+  
+  .animate-pulse {
+    animation: pulse 2s infinite;
+  }

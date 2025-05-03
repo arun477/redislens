@@ -6,10 +6,11 @@ import CommandView from './components/CommandView';
 import ToastMessage from './components/ToastMessage';
 import LoadingOverlay from './components/LoadingOverlay';
 import Header from './components/Header';
-import AppUtilities from './components/AppUtilities';
 
-// Import custom animations and effects
+
+// Import theme styles
 import './animations.css';
+import './light-theme.css';
 
 const App = () => {
   const [activeView, setActiveView] = useState('keys-view');
@@ -86,7 +87,7 @@ const App = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-gray-950 to-black text-gray-100 overflow-hidden font-sans bg-pattern">
+    <div className="flex h-screen bg-gradient-to-br from-gray-50 to-white text-gray-900 overflow-hidden font-sans bg-pattern">
       <Sidebar 
         activeView={activeView} 
         setActiveView={setActiveView}
@@ -99,7 +100,7 @@ const App = () => {
         isCollapsed={isSidebarCollapsed}
       />
 
-      <div className="flex-1 flex flex-col relative overflow-hidden">
+      <div className="flex-1 flex flex-col relative overflow-hidden border-l border-gray-200">
         <Header 
           isConnected={isConnected} 
           toggleSidebar={toggleSidebar} 
@@ -112,7 +113,7 @@ const App = () => {
           setIsLoading={setIsLoading}
         />
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-900/30 backdrop-blur-sm">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
           {activeView === 'keys-view' && (
             <KeysView 
               isConnected={isConnected}
@@ -144,13 +145,6 @@ const App = () => {
 
       {toast.show && <ToastMessage toast={toast} />}
       {isLoading && <LoadingOverlay />}
-      
-      <AppUtilities 
-        isConnected={isConnected} 
-        setActiveView={setActiveView} 
-        refreshCurrentView={refreshCurrentView} 
-        toggleSidebar={toggleSidebar} 
-      />
     </div>
   );
 };

@@ -52,11 +52,12 @@ const Header = ({
   };
 
   return (
-    <header className="h-16 border-b border-gray-800/50 bg-black/60 backdrop-blur-md flex items-center justify-between px-4 z-10">
+    <header className="h-16 border-b border-gray-200 bg-white shadow-sm flex items-center justify-between px-4 z-10">
       <div className="flex items-center">
         <button 
           onClick={toggleSidebar}
-          className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-cyan-400 transition-colors mr-4"
+          className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-cyan-600 transition-colors mr-4"
+          aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="transform transition-transform duration-300" style={{ transform: isSidebarCollapsed ? 'scaleX(-1)' : 'none' }}>
             <path d="M4 18L4 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -67,7 +68,7 @@ const Header = ({
           </svg>
         </button>
         
-        <h1 className="text-xl font-bold text-cyan-500 tracking-wide">
+        <h1 className="text-xl font-bold text-gray-800">
           {getViewTitle()}
         </h1>
       </div>
@@ -75,7 +76,7 @@ const Header = ({
       <div className="flex items-center gap-4">
         <button 
           onClick={refreshCurrentView}
-          className="w-8 h-8 flex items-center justify-center bg-gray-800/60 hover:bg-gray-700/60 text-cyan-400 rounded transition-colors"
+          className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-cyan-600 rounded transition-colors"
           title="Refresh"
         >
           <i className="fas fa-sync-alt"></i>
@@ -86,36 +87,36 @@ const Header = ({
             onClick={() => setShowConnectionInfo(!showConnectionInfo)}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border transition-colors ${
               isConnected 
-                ? 'bg-cyan-900/30 border-cyan-700/50 text-cyan-300' 
-                : 'bg-amber-900/30 border-amber-700/50 text-amber-300'
+                ? 'bg-cyan-50 border-cyan-200 text-cyan-700' 
+                : 'bg-amber-50 border-amber-200 text-amber-700'
             }`}
           >
-            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-cyan-400 animate-pulse' : 'bg-amber-400'}`}></div>
+            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-cyan-500 animate-pulse' : 'bg-amber-500'}`}></div>
             {isConnected ? 'Connected' : 'Disconnected'}
             <i className="fas fa-chevron-down text-xs"></i>
           </button>
           
           {showConnectionInfo && (
-            <div className="absolute right-0 mt-2 w-64 bg-gray-900/95 backdrop-blur-md border border-gray-800/50 rounded-lg shadow-xl p-3 z-20">
+            <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-20">
               <div className="space-y-2 text-sm">
                 <div className="grid grid-cols-3 gap-1">
                   <div className="text-gray-500">Host:</div>
-                  <div className="col-span-2 font-mono text-white">{connectionConfig.host}</div>
+                  <div className="col-span-2 font-mono text-gray-800">{connectionConfig.host}</div>
                   
                   <div className="text-gray-500">Port:</div>
-                  <div className="col-span-2 font-mono text-white">{connectionConfig.port}</div>
+                  <div className="col-span-2 font-mono text-gray-800">{connectionConfig.port}</div>
                   
                   <div className="text-gray-500">Database:</div>
-                  <div className="col-span-2 font-mono text-white">{connectionConfig.db}</div>
+                  <div className="col-span-2 font-mono text-gray-800">{connectionConfig.db}</div>
                 </div>
                 
-                <div className="pt-2 border-t border-gray-800/50 flex justify-end">
+                <div className="pt-2 border-t border-gray-200 flex justify-end">
                   <button 
                     onClick={() => {
                       reconnect();
                       setShowConnectionInfo(false);
                     }}
-                    className="px-3 py-1.5 bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-300 rounded text-xs flex items-center gap-1.5 transition-colors"
+                    className="px-3 py-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-700 rounded text-xs flex items-center gap-1.5 transition-colors"
                   >
                     <i className="fas fa-plug"></i>
                     Reconnect

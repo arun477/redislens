@@ -54,20 +54,16 @@ const Sidebar = ({
   };
 
   const getNavItemClass = (view) => {
-    let baseClass = "relative flex items-center justify-center transition-all duration-200 rounded-lg";
+    let baseClass = "relative sidebar-item transition-all duration-200 rounded-md";
     
     if (isCollapsed) {
-      baseClass += " w-12 h-12 mx-auto mb-4";
+      baseClass += " w-10 h-10 mx-auto mb-4 flex items-center justify-center";
     } else {
-      baseClass += " p-3 mx-3 mb-2";
+      baseClass += " p-2 mx-3 mb-2 flex items-center";
     }
     
     if (activeView === view) {
-      baseClass += isCollapsed 
-        ? " bg-cyan-900/30 text-cyan-400 border border-cyan-700/30" 
-        : " bg-cyan-900/30 text-cyan-400 border-l-2 border-cyan-500";
-    } else {
-      baseClass += " text-gray-500 hover:text-gray-300 hover:bg-gray-800/50";
+      baseClass += " active";
     }
     
     return baseClass;
@@ -77,15 +73,15 @@ const Sidebar = ({
     if (!isCollapsed) return null;
     
     return (
-      <div className="absolute left-full ml-2 px-2 py-1 bg-black/80 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
+      <div className="absolute left-full ml-2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50">
         {label}
       </div>
     );
   };
 
   return (
-    <div className={`${isCollapsed ? 'w-16' : 'w-64'} bg-black/80 backdrop-blur-md h-screen flex flex-col border-r border-gray-800/50 transition-all duration-300 z-20`}>
-      <div className={`p-4 border-b border-gray-800/50 flex ${isCollapsed ? 'justify-center' : 'justify-between'} items-center`}>
+    <div className={`${isCollapsed ? 'w-16' : 'w-64'} sidebar-metallic h-screen flex flex-col z-20 transition-all duration-300`}>
+      <div className={`p-4 border-b border-gray-800 flex ${isCollapsed ? 'justify-center' : 'justify-between'} items-center`}>
         {!isCollapsed && (
           <div className="text-xl font-bold flex items-center gap-2">
             <div className="relative w-6 h-6 flex items-center justify-center">
@@ -122,7 +118,7 @@ const Sidebar = ({
         ) : (
           <button 
             onClick={() => setShowConnectionForm(!showConnectionForm)}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-800/60 text-cyan-400 hover:bg-gray-700/60 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-700 text-cyan-400 hover:bg-gray-600 transition-colors"
           >
             <i className={`fas fa-${showConnectionForm ? 'times' : 'plug'}`}></i>
           </button>
@@ -130,51 +126,51 @@ const Sidebar = ({
       </div>
 
       {!isCollapsed && showConnectionForm && (
-        <div className="p-4 border-b border-gray-800/50 space-y-3 bg-gray-900/30">
+        <div className="p-4 border-b border-gray-800 space-y-3 bg-gray-800/30">
           <div className="space-y-1">
-            <label className="text-xs uppercase tracking-wider text-gray-500">Host</label>
+            <label className="text-xs uppercase tracking-wider text-gray-400">Host</label>
             <input
               type="text"
               name="host"
               value={formData.host}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 bg-gray-900/70 text-white border border-gray-700/50 rounded-md focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
+              className="w-full px-3 py-2 bg-gray-700/70 text-white border border-gray-600/50 rounded-md focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
               placeholder="localhost"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs uppercase tracking-wider text-gray-500">Port</label>
+              <label className="text-xs uppercase tracking-wider text-gray-400">Port</label>
               <input
                 type="number"
                 name="port"
                 value={formData.port}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 bg-gray-900/70 text-white border border-gray-700/50 rounded-md focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
+                className="w-full px-3 py-2 bg-gray-700/70 text-white border border-gray-600/50 rounded-md focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
               />
             </div>
             
             <div className="space-y-1">
-              <label className="text-xs uppercase tracking-wider text-gray-500">DB</label>
+              <label className="text-xs uppercase tracking-wider text-gray-400">DB</label>
               <input
                 type="number"
                 name="db"
                 value={formData.db}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 bg-gray-900/70 text-white border border-gray-700/50 rounded-md focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
+                className="w-full px-3 py-2 bg-gray-700/70 text-white border border-gray-600/50 rounded-md focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs uppercase tracking-wider text-gray-500">Password</label>
+            <label className="text-xs uppercase tracking-wider text-gray-400">Password</label>
             <input
               type="password"
               name="password"
               value={formData.password}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 bg-gray-900/70 text-white border border-gray-700/50 rounded-md focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
+              className="w-full px-3 py-2 bg-gray-700/70 text-white border border-gray-600/50 rounded-md focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 text-sm"
               placeholder="Optional"
             />
           </div>
@@ -232,8 +228,8 @@ const Sidebar = ({
         </div>
       </nav>
 
-      <div className={`p-3 border-t border-gray-800/50 ${isCollapsed ? 'flex justify-center' : ''}`}>
-        <div className={`flex items-center ${isCollapsed ? '' : 'gap-2'}`}>
+      <div className="p-3 border-t border-gray-800/50 flex items-center">
+        <div className={`flex items-center ${isCollapsed ? 'justify-center w-full' : 'gap-2'}`}>
           <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-cyan-400 animate-pulse' : 'bg-amber-400'}`}></div>
           {!isCollapsed && (
             <span className={`text-sm ${isConnected ? 'text-cyan-400' : 'text-amber-400'}`}>

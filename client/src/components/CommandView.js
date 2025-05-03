@@ -236,30 +236,12 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
       default: return 'text-white';
     }
   };
-  
-  const renderPrompt = () => {
-    return (
-      <div className="flex items-center text-cyan-400 font-mono text-sm">
-        <span className="mr-2">{isConnected ? 'redis>' : 'not-connected>'}</span>
-        <input
-          ref={inputRef}
-          type="text"
-          value={inputValue}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent border-none outline-none text-white focus:ring-0"
-          placeholder="Type command here..."
-          autoFocus
-        />
-      </div>
-    );
-  };
 
   return (
-    <div className="h-full flex flex-col bg-black/40 backdrop-blur-sm">
-      <div className="p-4 border-b border-gray-800/50 bg-black/60 backdrop-blur-md flex justify-between items-center">
-        <h1 className="text-xl font-semibold text-white flex items-center gap-3">
-          <i className="fas fa-terminal text-cyan-500"></i>
+    <div className="h-full flex flex-col bg-white">
+      <div className="p-4 border-b border-gray-200 bg-white flex justify-between items-center">
+        <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-3">
+          <i className="fas fa-terminal text-cyan-600"></i>
           Redis Command Terminal
         </h1>
         
@@ -270,7 +252,7 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
                 { type: 'system', content: 'Terminal cleared' }
               ]);
             }}
-            className="px-3 py-1.5 bg-gray-800/60 hover:bg-gray-700/60 text-gray-300 rounded text-sm flex items-center gap-1.5 transition-colors"
+            className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm flex items-center gap-1.5 transition-colors"
           >
             <i className="fas fa-eraser"></i>
             Clear
@@ -278,7 +260,7 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
           
           <button
             onClick={showHelpCommand}
-            className="px-3 py-1.5 bg-gray-800/60 hover:bg-gray-700/60 text-gray-300 rounded text-sm flex items-center gap-1.5 transition-colors"
+            className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm flex items-center gap-1.5 transition-colors"
           >
             <i className="fas fa-question-circle"></i>
             Help
@@ -286,9 +268,10 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
         </div>
       </div>
       
+      {/* Terminal with metallic black theme for contrast */}
       <div 
         ref={terminalRef}
-        className="flex-1 overflow-auto p-4 font-mono text-sm bg-black/30"
+        className="flex-1 overflow-auto p-4 font-mono text-sm bg-gradient-to-b from-gray-900 to-black text-white"
       >
         {terminalOutput.map((output, index) => (
           <div key={index} className={`mb-2 whitespace-pre-wrap ${getOutputClass(output.type)}`}>
@@ -298,8 +281,20 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
         ))}
       </div>
       
-      <div className="p-3 border-t border-gray-800/50 bg-black/60 backdrop-blur-md">
-        {renderPrompt()}
+      <div className="p-3 border-t border-gray-200 bg-gradient-to-b from-gray-800 to-black">
+        <div className="flex items-center text-cyan-400 font-mono text-sm">
+          <span className="mr-2">{isConnected ? 'redis>' : 'not-connected>'}</span>
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            className="flex-1 bg-transparent border-none outline-none text-white focus:ring-0"
+            placeholder="Type command here..."
+            autoFocus
+          />
+        </div>
       </div>
     </div>
   );

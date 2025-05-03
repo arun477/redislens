@@ -25,37 +25,36 @@ const ToastMessage = ({ toast }) => {
   }, []);
 
   const getToastStyles = () => {
-    const baseClasses = 'fixed bottom-4 right-4 z-50 max-w-sm rounded-lg shadow-2xl p-4 backdrop-blur-sm flex items-start border transition-all duration-300';
+    const baseClasses = 'fixed bottom-4 right-4 z-50 max-w-sm rounded-lg shadow-lg p-4 backdrop-blur-sm flex items-start border transition-all duration-300 bg-white';
     
     if (exiting) {
       return `${baseClasses} translate-x-full opacity-0`;
     }
     
     if (isError) {
-      return `${baseClasses} bg-gradient-to-r from-red-900/80 to-red-800/80 border-red-700/50 animate-slide-in-right`;
+      return `${baseClasses} border-red-200 animate-slide-in-right`;
     } else {
-      return `${baseClasses} bg-gradient-to-r from-cyan-900/80 to-cyan-800/80 border-cyan-700/50 animate-slide-in-right`;
+      return `${baseClasses} border-cyan-200 animate-slide-in-right`;
     }
   };
 
   return (
     <div className={getToastStyles()}>
-      <div className={`flex items-center justify-center h-6 w-6 rounded-full mr-3 ${isError ? 'text-red-400' : 'text-cyan-400'}`}>
+      <div className={`flex items-center justify-center h-6 w-6 rounded-full mr-3 ${isError ? 'text-red-500' : 'text-cyan-500'}`}>
         <i className={isError ? 'fas fa-exclamation-circle' : 'fas fa-check-circle'}></i>
       </div>
       
       <div className="flex-1">
-        <div className="font-semibold text-white mb-1">{title}</div>
-        <div className="text-sm text-gray-200 opacity-90">{message}</div>
+        <div className="font-semibold text-gray-900 mb-1">{title}</div>
+        <div className="text-sm text-gray-600">{message}</div>
         
         {/* Progress bar */}
-        <div className="h-0.5 bg-white/20 mt-2 relative overflow-hidden rounded-full">
+        <div className="h-0.5 bg-gray-200 mt-2 relative overflow-hidden rounded-full">
           <div 
-            className={`absolute left-0 top-0 bottom-0 rounded-full ${isError ? 'bg-red-400' : 'bg-cyan-400'}`} 
+            className={`absolute left-0 top-0 bottom-0 rounded-full ${isError ? 'bg-red-500' : 'bg-cyan-500'}`} 
             style={{ 
               width: `${progress}%`, 
-              transition: 'width 30ms linear',
-              boxShadow: isError ? '0 0 5px #FF5A5F' : '0 0 5px #00FFFF'
+              transition: 'width 30ms linear'
             }}
           ></div>
         </div>
