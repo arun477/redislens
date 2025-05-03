@@ -2,10 +2,15 @@ import React from 'react';
 
 const LoadingOverlay = () => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50">
-      <div className="bg-gray-900 p-5 rounded-lg flex items-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mr-3"></div>
-        <div className="text-white">Loading...</div>
+    <div className="fixed inset-0 backdrop-blur-sm bg-black/60 flex justify-center items-center z-50 animate-fade-in">
+      <div className="bg-black/70 border border-cyan-900/50 rounded-lg p-6 shadow-2xl flex items-center gap-4 animate-pulse">
+        <div className="relative w-10 h-10">
+          {/* Spinner with glow effect */}
+          <div className="absolute inset-0 rounded-full border-t-2 border-cyan-500 animate-spin" 
+            style={{ boxShadow: '0 0 10px #00FFFF' }}></div>
+          <div className="absolute inset-0 rounded-full border-2 border-gray-800"></div>
+        </div>
+        <div className="text-cyan-300 text-lg tracking-wide font-light">Processing...</div>
       </div>
     </div>
   );

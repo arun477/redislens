@@ -1,31 +1,8 @@
-import React from 'react';
-
-const keyDetailsStyles = {
-  container: "h-full bg-gray-900 text-gray-100 flex flex-col",
-  header: "p-4 bg-black/30 sticky top-0 z-10 flex justify-between items-center backdrop-blur-md border-b border-gray-800/30",
-  title: "text-xl font-semibold flex items-center gap-2 truncate",
-  contentContainer: "flex-1 p-4 overflow-auto",
-  metadataCard: "grid grid-cols-3 gap-4 mb-4 bg-black/20 p-4 rounded-lg border border-gray-800/30 shadow-md backdrop-blur-sm",
-  metadataItem: "space-y-1",
-  metadataLabel: "text-xs uppercase tracking-wider text-gray-500",
-  metadataValue: "font-semibold text-white",
-  valueSection: "mb-4 space-y-2",
-  valueSectionLabel: "font-semibold text-white flex items-center gap-2",
-  valueContainer: "bg-black/30 border border-gray-800/30 rounded-lg p-3 shadow-inner overflow-auto max-h-96 backdrop-blur-sm",
-  textArea: "w-full h-40 p-3 bg-black/40 text-white border border-gray-700/30 rounded-md font-mono text-sm resize-none focus:outline-none focus:ring-1 focus:ring-red-500",
-  table: {
-    container: "min-w-full border border-gray-800/50 rounded-lg overflow-hidden",
-    header: "bg-black/60 text-left text-white text-sm font-semibold",
-    headerCell: "py-2 px-4 border-b border-gray-800/50",
-    body: "divide-y divide-gray-800/30",
-    row: "transition-colors duration-150 hover:bg-gray-800/20",
-    cell: "py-2 px-4 text-sm"
-  },
-  footer: "mt-auto border-t border-gray-800/30 p-4 flex justify-end bg-black/30 backdrop-blur-sm",
-  deleteButton: "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white px-4 py-2 rounded-md flex items-center justify-center transition-all duration-300 gap-2"
-};
+import React, { useState } from 'react';
 
 const KeyDetails = ({ keyDetails, onDelete }) => {
+  const [activeTab, setActiveTab] = useState('value'); // 'value', 'metadata'
+  
   const formatBytes = (bytes, decimals = 2) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -45,53 +22,89 @@ const KeyDetails = ({ keyDetails, onDelete }) => {
       default: return <i className="fas fa-question-circle text-gray-400"></i>;
     }
   };
+  
+  const getTypeColor = (type) => {
+    switch(type) {
+      case 'string': return 'border-blue-500/30 bg-blue-900/10';
+      case 'list': return 'border-green-500/30 bg-green-900/10';
+      case 'set': return 'border-purple-500/30 bg-purple-900/10';
+      case 'zset': return 'border-yellow-500/30 bg-yellow-900/10';
+      case 'hash': return 'border-red-500/30 bg-red-900/10';
+      default: return 'border-gray-700/50';
+    }
+  };
 
   const renderValue = () => {
     const { type, value } = keyDetails;
 
     if (type === 'string') {
+      // Determine if the value might be JSON
+      let isJson = false;
+      let jsonValue = null;
+      
+      if (typeof value === 'string' && (value.startsWith('{') || value.startsWith('['))) {
+        try {
+          jsonValue = JSON.parse(value);
+          isJson = true;
+        } catch (e) {
+          // Not JSON, continue with normal display
+        }
+      }
+      
+      if (isJson) {
+        return (
+          <pre className="p-4 bg-black/30 text-white rounded-md overflow-auto max-h-full font-mono text-sm border border-gray-800/50 whitespace-pre-wrap">
+            {JSON.stringify(jsonValue, null, 2)}
+          </pre>
+        );
+      }
+      
       return (
         <textarea
           readOnly
-          className={keyDetailsStyles.textArea}
+          className="w-full h-full p-4 bg-black/30 text-white border border-gray-800/50 rounded-md font-mono text-sm resize-none focus:outline-none focus:ring-1 focus:ring-cyan-500"
           value={value}
         />
       );
     } else if (type === 'list') {
       return (
-        <table className={keyDetailsStyles.table.container}>
-          <thead className={keyDetailsStyles.table.header}>
-            <tr>
-              <th className={keyDetailsStyles.table.headerCell}>Index</th>
-              <th className={keyDetailsStyles.table.headerCell}>Value</th>
-            </tr>
-          </thead>
-          <tbody className={keyDetailsStyles.table.body}>
-            {value.map((item, index) => (
-              <tr key={index} className={keyDetailsStyles.table.row}>
-                <td className={keyDetailsStyles.table.cell}>{index}</td>
-                <td className={keyDetailsStyles.table.cell}>{item}</td>
+        <div className="overflow-auto max-h-full">
+          <table className="min-w-full divide-y divide-gray-800/30">
+            <thead className="bg-black/40">
+              <tr>
+                <th className="py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider w-20">Index</th>
+                <th className="py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Value</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-black/20 divide-y divide-gray-800/30">
+              {value.map((item, index) => (
+                <tr key={index} className="hover:bg-gray-800/20">
+                  <td className="py-2 px-4 text-cyan-400 font-mono">{index}</td>
+                  <td className="py-2 px-4 font-mono text-sm overflow-hidden text-ellipsis">{item}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       );
     } else if (type === 'set') {
       return (
-        <table className={keyDetailsStyles.table.container}>
-          <thead className={keyDetailsStyles.table.header}>
-            <tr>
-              <th className={keyDetailsStyles.table.headerCell}>Member</th>
-            </tr>
-          </thead>
-          <tbody className={keyDetailsStyles.table.body}>
-            {value.map((item, index) => (
-              <tr key={index} className={keyDetailsStyles.table.row}>
-                <td className={keyDetailsStyles.table.cell}>{item}</td>
+        <div className="overflow-auto max-h-full">
+          <table className="min-w-full divide-y divide-gray-800/30">
+            <thead className="bg-black/40">
+              <tr>
+                <th className="py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Member</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-black/20 divide-y divide-gray-800/30">
+              {value.map((item, index) => (
+                <tr key={index} className="hover:bg-gray-800/20">
+                  <td className="py-2 px-4 font-mono text-sm">{item}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       );
     } else if (type === 'zset') {
       const pairs = [];
@@ -99,97 +112,145 @@ const KeyDetails = ({ keyDetails, onDelete }) => {
         pairs.push({ member: value[i], score: value[i+1] });
       }
       return (
-        <table className={keyDetailsStyles.table.container}>
-          <thead className={keyDetailsStyles.table.header}>
-            <tr>
-              <th className={keyDetailsStyles.table.headerCell}>Member</th>
-              <th className={keyDetailsStyles.table.headerCell}>Score</th>
-            </tr>
-          </thead>
-          <tbody className={keyDetailsStyles.table.body}>
-            {pairs.map((pair, index) => (
-              <tr key={index} className={keyDetailsStyles.table.row}>
-                <td className={keyDetailsStyles.table.cell}>{pair.member}</td>
-                <td className={keyDetailsStyles.table.cell}>{pair.score}</td>
+        <div className="overflow-auto max-h-full">
+          <table className="min-w-full divide-y divide-gray-800/30">
+            <thead className="bg-black/40">
+              <tr>
+                <th className="py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Member</th>
+                <th className="py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider w-32">Score</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-black/20 divide-y divide-gray-800/30">
+              {pairs.map((pair, index) => (
+                <tr key={index} className="hover:bg-gray-800/20">
+                  <td className="py-2 px-4 font-mono text-sm">{pair.member}</td>
+                  <td className="py-2 px-4 text-cyan-400 font-mono">{pair.score}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       );
     } else if (type === 'hash') {
       return (
-        <table className={keyDetailsStyles.table.container}>
-          <thead className={keyDetailsStyles.table.header}>
-            <tr>
-              <th className={keyDetailsStyles.table.headerCell}>Field</th>
-              <th className={keyDetailsStyles.table.headerCell}>Value</th>
-            </tr>
-          </thead>
-          <tbody className={keyDetailsStyles.table.body}>
-            {Object.entries(value).map(([field, val], index) => (
-              <tr key={index} className={keyDetailsStyles.table.row}>
-                <td className={keyDetailsStyles.table.cell}>{field}</td>
-                <td className={keyDetailsStyles.table.cell}>{val}</td>
+        <div className="overflow-auto max-h-full">
+          <table className="min-w-full divide-y divide-gray-800/30">
+            <thead className="bg-black/40">
+              <tr>
+                <th className="py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Field</th>
+                <th className="py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Value</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-black/20 divide-y divide-gray-800/30">
+              {Object.entries(value).map(([field, val], index) => (
+                <tr key={index} className="hover:bg-gray-800/20">
+                  <td className="py-2 px-4 font-mono text-sm">{field}</td>
+                  <td className="py-2 px-4 font-mono text-sm">{val}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       );
     } else {
       return (
-        <pre className="p-3 bg-black/40 text-white rounded-md overflow-auto max-h-80 text-sm font-mono">
+        <pre className="p-4 bg-black/30 text-white rounded-md overflow-auto max-h-full font-mono text-sm border border-gray-800/50">
           {JSON.stringify(value, null, 2)}
         </pre>
       );
     }
   };
 
+  const renderMetadata = () => {
+    return (
+      <div className="p-4 space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <div className={`p-4 rounded-lg border ${getTypeColor(keyDetails.type)}`}>
+            <div className="text-xs uppercase text-gray-500 mb-1">Type</div>
+            <div className="text-lg font-semibold flex items-center gap-2">
+              {getTypeIcon(keyDetails.type)}
+              <span>{keyDetails.type}</span>
+            </div>
+          </div>
+          
+          <div className="p-4 rounded-lg border border-gray-700/50 bg-gray-900/20">
+            <div className="text-xs uppercase text-gray-500 mb-1">Memory Usage</div>
+            <div className="text-lg font-semibold">{formatBytes(keyDetails.memory_usage)}</div>
+          </div>
+        </div>
+        
+        <div className="p-4 rounded-lg border border-gray-700/50 bg-gray-900/20">
+          <div className="text-xs uppercase text-gray-500 mb-1">Time To Live</div>
+          <div className="text-lg font-semibold">
+            {keyDetails.ttl > 0 
+              ? `${keyDetails.ttl} seconds` 
+              : keyDetails.ttl === -1 
+                ? 'No expiration' 
+                : 'Key does not exist'
+            }
+          </div>
+        </div>
+        
+        <div className="p-4 rounded-lg border border-gray-700/50 bg-gray-900/20">
+          <div className="text-xs uppercase text-gray-500 mb-1">Key</div>
+          <div className="font-mono text-sm break-all">{keyDetails.key}</div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className={keyDetailsStyles.container}>
-      <div className={keyDetailsStyles.header}>
-        <div className={keyDetailsStyles.title}>
+    <div className="h-full flex flex-col bg-black/30 backdrop-blur-sm">
+      <div className="flex items-center justify-between p-4 border-b border-gray-800/50 bg-black/40 backdrop-blur-md">
+        <div className="flex items-center gap-3">
           {getTypeIcon(keyDetails.type)}
-          <span className="truncate">{keyDetails.key}</span>
+          <span className="text-lg font-semibold truncate max-w-xs">{keyDetails.key}</span>
+        </div>
+        
+        <div className="flex gap-2">
+          <button
+            onClick={() => onDelete(keyDetails.key)}
+            className="px-3 py-1.5 bg-red-900/30 hover:bg-red-900/50 text-red-300 rounded text-sm flex items-center gap-1.5 transition-colors"
+          >
+            <i className="fas fa-trash"></i>
+            Delete
+          </button>
         </div>
       </div>
-
-      <div className={keyDetailsStyles.contentContainer}>
-        <div className={keyDetailsStyles.metadataCard}>
-          <div className={keyDetailsStyles.metadataItem}>
-            <div className={keyDetailsStyles.metadataLabel}>Type</div>
-            <div className={keyDetailsStyles.metadataValue}>
-              {getTypeIcon(keyDetails.type)} {keyDetails.type}
-            </div>
-          </div>
-          <div className={keyDetailsStyles.metadataItem}>
-            <div className={keyDetailsStyles.metadataLabel}>Time to Live</div>
-            <div className={keyDetailsStyles.metadataValue}>
-              {keyDetails.ttl > 0 ? `${keyDetails.ttl} seconds` : 'No expiration'}
-            </div>
-          </div>
-          <div className={keyDetailsStyles.metadataItem}>
-            <div className={keyDetailsStyles.metadataLabel}>Memory Usage</div>
-            <div className={keyDetailsStyles.metadataValue}>{formatBytes(keyDetails.memory_usage)}</div>
-          </div>
-        </div>
-
-        <div className={keyDetailsStyles.valueSection}>
-          <div className={keyDetailsStyles.valueSectionLabel}>
-            <i className="fas fa-database text-gray-400 mr-1"></i> Value
-          </div>
-          <div className={keyDetailsStyles.valueContainer}>
-            {renderValue()}
-          </div>
-        </div>
+      
+      <div className="px-4 border-b border-gray-800/50">
+        <nav className="flex gap-1">
+          <button
+            onClick={() => setActiveTab('value')}
+            className={`px-4 py-2 transition-colors relative ${
+              activeTab === 'value' 
+                ? 'text-cyan-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            Value
+            {activeTab === 'value' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-500"></span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('metadata')}
+            className={`px-4 py-2 transition-colors relative ${
+              activeTab === 'metadata' 
+                ? 'text-cyan-400' 
+                : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            Metadata
+            {activeTab === 'metadata' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyan-500"></span>
+            )}
+          </button>
+        </nav>
       </div>
-
-      <div className={keyDetailsStyles.footer}>
-        <button
-          onClick={() => onDelete(keyDetails.key)}
-          className={keyDetailsStyles.deleteButton}
-        >
-          <i className="fas fa-trash-alt"></i> Delete Key
-        </button>
+      
+      <div className="flex-1 overflow-auto p-4">
+        {activeTab === 'value' ? renderValue() : renderMetadata()}
       </div>
     </div>
   );
