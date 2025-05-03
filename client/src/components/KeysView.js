@@ -1,6 +1,30 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import KeyDetails from "./KeyDetails";
+
+const keysViewStyles = {
+  container: "flex h-full bg-gray-900 text-gray-100",
+  keysList: "w-2/5 bg-black/40 overflow-auto shadow-lg border-r border-gray-800/30 backdrop-blur-sm",
+  searchBar: "p-2 sticky top-0 bg-black/60 border-b border-gray-800/50 flex gap-2 backdrop-blur-md z-10",
+  searchInput: "flex-1 px-3 py-2 bg-gray-900/70 text-white border border-gray-700/50 rounded-md focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all duration-200",
+  searchButton: "bg-red-600 hover:bg-red-700 text-white p-2 rounded-md transition-colors duration-200 flex items-center justify-center",
+  bulkActionBar: "p-2 bg-red-900/20 border-b border-red-800/30 flex justify-between items-center backdrop-blur-sm",
+  selectedText: "text-sm font-semibold text-white",
+  deleteButton: "bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm transition-colors duration-200 flex items-center gap-1",
+  table: {
+    header: "sticky top-0 flex items-center p-2 bg-black/70 border-b border-gray-700/50 text-gray-300 text-xs uppercase tracking-wider backdrop-blur-md z-10",
+    row: "flex items-center p-2 border-b border-gray-800/30 hover:bg-gray-800/40 transition-colors duration-150 text-sm",
+    rowSelected: "bg-gray-800/50 border-l-2 border-red-500",
+    checkboxCol: "mr-2",
+    keyCol: "w-4/6 cursor-pointer truncate",
+    typeCol: "w-1/6 text-gray-400",
+    actionsCol: "w-1/6 flex space-x-1 justify-end"
+  },
+  actionButton: "bg-gray-800 hover:bg-gray-700 text-white p-1 rounded-md transition-colors duration-200",
+  detailsPanel: "w-3/5 bg-gray-900 overflow-auto",
+  emptyState: "h-full flex flex-col items-center justify-center text-gray-500",
+  emptyIcon: "text-5xl mb-4 opacity-30",
+  noKeysMessage: "p-4 text-center text-gray-500 italic"
+};
 
 const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) => {
   const [keys, setKeys] = useState([]);
@@ -18,25 +42,34 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
 
     try {
       setIsLoading(true);
-      const response = await axios.post(`/api/keys`, {
-        ...connectionConfig,
-        pattern,
+      
+      const response = await fetch('/api/keys', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...connectionConfig,
+          pattern,
+        })
       });
-
-      setKeys(response.data.keys || []);
+      
+      const data = await response.json();
+      
+      setKeys(data.keys || []);
       const newSelectedKeys = new Set(
-        [...selectedKeys].filter((key) => response.data.keys.includes(key))
+        [...selectedKeys].filter((key) => data.keys.includes(key))
       );
       setSelectedKeys(newSelectedKeys);
 
-      if (selectedKey && !response.data.keys.includes(selectedKey)) {
+      if (selectedKey && !data.keys.includes(selectedKey)) {
         setSelectedKey(null);
         setKeyDetails(null);
       }
     } catch (error) {
       showToast(
         "Error",
-        error.response?.data?.detail || "Failed to fetch keys.",
+        "Failed to fetch keys.",
         true
       );
     } finally {
@@ -52,16 +85,21 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
   const fetchKeyDetails = async (key) => {
     try {
       setIsLoading(true);
-      const response = await axios.post(
-        `/api/key/${encodeURIComponent(key)}`,
-        connectionConfig
-      );
-      setKeyDetails(response.data);
+      
+      const response = await fetch(`/api/key/${encodeURIComponent(key)}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(connectionConfig)
+      });
+      
+      const data = await response.json();
+      setKeyDetails(data);
     } catch (error) {
       showToast(
         "Error",
-        error.response?.data?.detail ||
-          `Failed to fetch details for key: ${key}`,
+        `Failed to fetch details for key: ${key}`,
         true
       );
     } finally {
@@ -77,12 +115,18 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
 
     try {
       setIsLoading(true);
-      const response = await axios.delete(
-        `/api/key/${encodeURIComponent(key)}`,
-        { data: connectionConfig }
-      );
+      
+      const response = await fetch(`/api/key/${encodeURIComponent(key)}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(connectionConfig)
+      });
+      
+      const data = await response.json();
 
-      if (response.data.status === "ok") {
+      if (data.status === "ok") {
         showToast("Success", `Key '${key}' was deleted successfully.`);
         fetchKeys();
         if (selectedKey === key) {
@@ -92,15 +136,14 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
       } else {
         showToast(
           "Error",
-          response.data.detail || "Failed to delete key.",
+          data.detail || "Failed to delete key.",
           true
         );
       }
     } catch (error) {
       showToast(
         "Error",
-        error.response?.data?.detail ||
-          "An error occurred while deleting the key.",
+        "An error occurred while deleting the key.",
         true
       );
     } finally {
@@ -126,15 +169,24 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
 
     try {
       setIsLoading(true);
-      const response = await axios.post(`/api/keys/delete`, {
-        ...connectionConfig,
-        keys: keysToDelete,
+      
+      const response = await fetch('/api/keys/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...connectionConfig,
+          keys: keysToDelete,
+        })
       });
+      
+      const data = await response.json();
 
-      if (response.data.deleted_count > 0) {
+      if (data.deleted_count > 0) {
         showToast(
           "Success",
-          `Successfully deleted ${response.data.deleted_count} of ${response.data.total_count} keys.`
+          `Successfully deleted ${data.deleted_count} of ${data.total_count} keys.`
         );
         fetchKeys();
         setSelectedKeys(new Set());
@@ -145,16 +197,15 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
         }
       } else {
         const errorMsg =
-          Array.isArray(response.data.errors) && response.data.errors.length > 0
-            ? response.data.errors.join(", ")
+          Array.isArray(data.errors) && data.errors.length > 0
+            ? data.errors.join(", ")
             : "Unknown error";
         showToast("Error", "Failed to delete keys: " + errorMsg, true);
       }
     } catch (error) {
       showToast(
         "Error",
-        error.response?.data?.detail ||
-          "An error occurred while deleting keys.",
+        "An error occurred while deleting keys.",
         true
       );
     } finally {
@@ -182,69 +233,70 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
     setSelectAll(!selectAll);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isConnected) {
       fetchKeys();
     }
   }, [isConnected]);
 
   return (
-    <div className="flex h-full bg-gray-800">
-      <div className="w-1/2 bg-gray-900 overflow-auto shadow-md">
-        <div className="p-2 bg-gray-700 border-b border-gray-600 flex items-center">
+    <div className={keysViewStyles.container}>
+      <div className={keysViewStyles.keysList}>
+        <div className={keysViewStyles.searchBar}>
           <input
             type="text"
             value={pattern}
             onChange={(e) => setPattern(e.target.value)}
             onKeyUp={(e) => e.key === "Enter" && fetchKeys()}
             placeholder="Search keys (e.g., user:*)"
-            className="flex-1 px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md"
+            className={keysViewStyles.searchInput}
           />
           <button
             onClick={fetchKeys}
-            className="ml-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
+            className={keysViewStyles.searchButton}
+            title="Search keys"
           >
             <i className="fas fa-search"></i>
           </button>
         </div>
 
         {selectedKeys.size > 0 && (
-          <div className="p-2 bg-gray-700 border-b border-gray-600 flex justify-between items-center">
-            <span className="text-sm font-semibold text-white">
+          <div className={keysViewStyles.bulkActionBar}>
+            <span className={keysViewStyles.selectedText}>
               {selectedKeys.size} selected
             </span>
             <button
               onClick={deleteSelectedKeys}
-              className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm"
+              className={keysViewStyles.deleteButton}
             >
-              <i className="fas fa-trash mr-1"></i> Delete Selected
+              <i className="fas fa-trash"></i> Delete
             </button>
           </div>
         )}
 
-        <div className="keys-list">
-          <div className="flex items-center p-2 bg-gray-700 border-b border-gray-600 text-white">
+        <div>
+          <div className={keysViewStyles.table.header}>
             <input
               type="checkbox"
               checked={selectAll}
               onChange={handleSelectAllChange}
-              className="mr-2"
+              className={keysViewStyles.table.checkboxCol}
             />
-            <div className="w-4/6 font-semibold">Key</div>
-            <div className="w-1/6 font-semibold">Type</div>
-            <div className="w-1/6 font-semibold">Actions</div>
+            <div className="w-4/6 text-xs uppercase">Key</div>
+            <div className="w-1/6 text-xs uppercase">Type</div>
+            <div className="w-1/6 text-xs uppercase text-right">Actions</div>
           </div>
 
           {keys.length === 0 ? (
-            <div className="p-4 text-center text-gray-400">
+            <div className={keysViewStyles.noKeysMessage}>
               No keys found matching pattern: {pattern}
             </div>
           ) : (
             keys.map((key) => (
               <div
                 key={key}
-                className={`flex items-center p-2 border-b border-gray-600 hover:bg-gray-700 text-white ${
-                  selectedKey === key ? "bg-gray-700 border-l-4 border-red-500" : ""
+                className={`${keysViewStyles.table.row} ${
+                  selectedKey === key ? keysViewStyles.table.rowSelected : ""
                 }`}
               >
                 <input
@@ -252,27 +304,30 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
                   checked={selectedKeys.has(key)}
                   onChange={() => handleCheckboxChange(key)}
                   onClick={(e) => e.stopPropagation()}
-                  className="mr-2"
+                  className={keysViewStyles.table.checkboxCol}
                 />
                 <div
-                  className="w-4/6 cursor-pointer truncate"
+                  className={keysViewStyles.table.keyCol}
                   onClick={() => handleKeySelect(key)}
+                  title={key}
                 >
                   {key}
                 </div>
-                <div className="w-1/6 text-gray-400">
+                <div className={keysViewStyles.table.typeCol}>
                   {keyDetails && keyDetails.key === key ? keyDetails.type : "..."}
                 </div>
-                <div className="w-1/6 flex space-x-1">
+                <div className={keysViewStyles.table.actionsCol}>
                   <button
                     onClick={() => handleKeySelect(key)}
-                    className="bg-red-600 hover:bg-red-700 text-white p-1 rounded-md"
+                    className={keysViewStyles.actionButton}
+                    title="View key details"
                   >
                     <i className="fas fa-eye"></i>
                   </button>
                   <button
                     onClick={() => deleteKey(key)}
-                    className="bg-red-600 hover:bg-red-700 text-white p-1 rounded-md"
+                    className={keysViewStyles.actionButton}
+                    title="Delete key"
                   >
                     <i className="fas fa-trash"></i>
                   </button>
@@ -283,12 +338,12 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading }) =>
         </div>
       </div>
 
-      <div className="w-1/2 bg-gray-800 overflow-auto">
+      <div className={keysViewStyles.detailsPanel}>
         {selectedKey && keyDetails ? (
           <KeyDetails keyDetails={keyDetails} onDelete={deleteKey} />
         ) : (
-          <div className="h-full flex flex-col items-center justify-center text-gray-400">
-            <i className="fas fa-arrow-left text-5xl mb-4"></i>
+          <div className={keysViewStyles.emptyState}>
+            <i className="fas fa-arrow-left text-5xl mb-4 opacity-30"></i>
             <div>Select a key to view details</div>
           </div>
         )}

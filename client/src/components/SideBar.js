@@ -1,5 +1,24 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+
+const sidebarStyles = {
+  container: "w-72 bg-gradient-to-b from-black to-gray-900 text-white h-screen flex flex-col shadow-xl border-r border-gray-800/30 backdrop-blur-lg z-10",
+  header: "p-4 border-b border-gray-800/50 bg-black/30 backdrop-blur-md",
+  logo: "text-xl font-bold flex items-center space-x-3",
+  logoIcon: "text-red-500 text-2xl",
+  formContainer: "p-4 border-b border-gray-800/50 space-y-4",
+  formGroup: "space-y-1",
+  formLabel: "text-xs uppercase tracking-wider text-gray-400 flex items-center",
+  formInput: "w-full px-3 py-2 bg-gray-900/70 text-white border border-gray-700/50 rounded-md focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all duration-200 backdrop-blur-sm",
+  connectButton: "w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white py-2 px-4 rounded-md flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-red-900/30",
+  navMenu: "flex-1 py-2",
+  navItem: "p-3 cursor-pointer hover:bg-gray-800/50 flex items-center space-x-3 mx-2 my-1 rounded-md transition-all duration-200",
+  navItemActive: "bg-gradient-to-r from-red-600/20 to-transparent border-l-2 border-red-500 shadow-sm",
+  navIcon: "text-gray-400 w-5",
+  statusBar: "p-3 border-t border-gray-800/50 flex items-center space-x-2 bg-black/30 backdrop-blur-sm",
+  statusIndicator: "w-2 h-2 rounded-full animate-pulse",
+  statusConnected: "bg-green-500 shadow-sm shadow-green-500/50",
+  statusDisconnected: "bg-red-500 shadow-sm shadow-red-500/50"
+};
 
 const Sidebar = ({ 
   activeView, 
@@ -24,129 +43,136 @@ const Sidebar = ({
   const testConnection = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.post('/api/ping', formData);
+      
+      // Use fetch instead of axios
+      const response = await fetch('/api/ping', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      const data = await response.json();
 
-      if (response.data.status === 'ok') {
+      if (data.status === 'ok') {
         setIsConnected(true);
         updateConnectionConfig(formData);
-        showToast('Connection Successful', 'Connected to Redis server successfully.');
+        showToast('Connection Successful', 'Connected to Redis server.');
       } else {
         setIsConnected(false);
-        showToast('Connection Failed', response.data.detail || 'Failed to connect to Redis server.', true);
+        showToast('Connection Failed', data.detail || 'Failed to connect to Redis server.', true);
       }
     } catch (error) {
       setIsConnected(false);
-      showToast('Connection Error', error.response?.data?.detail || 'An error occurred while connecting to Redis server.', true);
+      showToast('Connection Error', 'Connection error.', true);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white h-screen flex flex-col shadow-md">
-      <div className="p-4 border-b border-gray-600">
-        <div className="flex items-center space-x-2">
+    <div className={sidebarStyles.container}>
+      <div className={sidebarStyles.header}>
+        <div className={sidebarStyles.logo}>
           <i className="fas fa-database text-red-500"></i>
-          <h1 className="text-xl font-semibold">Redis Explorer</h1>
+          <span>Redis Explorer</span>
         </div>
       </div>
 
-      <div className="p-4 border-b border-gray-600">
-        <div className="mb-4">
-          <label className="block text-sm mb-1">
-            <i className="fas fa-server mr-1"></i> Host
+      <div className={sidebarStyles.formContainer}>
+        <div className={sidebarStyles.formGroup}>
+          <label className={sidebarStyles.formLabel}>
+            <i className="fas fa-server mr-2 opacity-70"></i> Host
           </label>
           <input
             type="text"
             name="host"
             value={formData.host}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:ring-2 focus:ring-red-500"
+            className={sidebarStyles.formInput}
+            placeholder="localhost"
           />
         </div>
 
-        <div className="mb-4">
-          <label className="block text-sm mb-1">
-            <i className="fas fa-plug mr-1"></i> Port
+        <div className={sidebarStyles.formGroup}>
+          <label className={sidebarStyles.formLabel}>
+            <i className="fas fa-plug mr-2 opacity-70"></i> Port
           </label>
           <input
             type="number"
             name="port"
             value={formData.port}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:ring-2 focus:ring-red-500"
+            className={sidebarStyles.formInput}
           />
         </div>
 
-        <div className="mb-4">
-          <label className="block text-sm mb-1">
-            <i className="fas fa-layer-group mr-1"></i> DB
+        <div className={sidebarStyles.formGroup}>
+          <label className={sidebarStyles.formLabel}>
+            <i className="fas fa-layer-group mr-2 opacity-70"></i> Database
           </label>
           <input
             type="number"
             name="db"
             value={formData.db}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:ring-2 focus:ring-red-500"
+            className={sidebarStyles.formInput}
           />
         </div>
 
-        <div className="mb-4">
-          <label className="block text-sm mb-1">
-            <i className="fas fa-key mr-1"></i> Password
+        <div className={sidebarStyles.formGroup}>
+          <label className={sidebarStyles.formLabel}>
+            <i className="fas fa-key mr-2 opacity-70"></i> Password
           </label>
           <input
             type="password"
             name="password"
             value={formData.password}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md focus:ring-2 focus:ring-red-500"
+            className={sidebarStyles.formInput}
+            placeholder="Optional"
           />
         </div>
 
         <button
           onClick={testConnection}
-          className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-md flex items-center justify-center transition duration-150 ease-in-out"
+          className={sidebarStyles.connectButton}
         >
-          <i className="fas fa-plug mr-2"></i> Connect
+          <i className="fas fa-plug mr-2"></i> 
+          {isConnected ? 'Reconnect' : 'Connect'}
         </button>
       </div>
 
-      <div className="flex-1">
+      <nav className={sidebarStyles.navMenu}>
         <div
-          className={`p-4 cursor-pointer hover:bg-gray-700 flex items-center space-x-2 ${
-            activeView === 'keys-view' ? 'bg-gray-700 border-l-4 border-red-500' : ''
-          }`}
+          className={`${sidebarStyles.navItem} ${activeView === 'keys-view' ? sidebarStyles.navItemActive : ''}`}
           onClick={() => setActiveView('keys-view')}
         >
-          <i className="fas fa-key"></i>
-          <span>Keys</span>
+          <i className="fas fa-key w-5 text-gray-400"></i>
+          <span>Keys Browser</span>
         </div>
 
         <div
-          className={`p-4 cursor-pointer hover:bg-gray-700 flex items-center space-x-2 ${
-            activeView === 'info-view' ? 'bg-gray-700 border-l-4 border-red-500' : ''
-          }`}
+          className={`${sidebarStyles.navItem} ${activeView === 'info-view' ? sidebarStyles.navItemActive : ''}`}
           onClick={() => setActiveView('info-view')}
         >
-          <i className="fas fa-info-circle"></i>
+          <i className="fas fa-info-circle w-5 text-gray-400"></i>
           <span>Server Info</span>
         </div>
 
         <div
-          className={`p-4 cursor-pointer hover:bg-gray-700 flex items-center space-x-2 ${
-            activeView === 'command-view' ? 'bg-gray-700 border-l-4 border-red-500' : ''
-          }`}
+          className={`${sidebarStyles.navItem} ${activeView === 'command-view' ? sidebarStyles.navItemActive : ''}`}
           onClick={() => setActiveView('command-view')}
         >
-          <i className="fas fa-terminal"></i>
-          <span>Execute Command</span>
+          <i className="fas fa-terminal w-5 text-gray-400"></i>
+          <span>Command Console</span>
         </div>
-      </div>
+      </nav>
 
-      <div className="p-4 border-t border-gray-600 flex items-center space-x-2">
-        <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-        <span>{isConnected ? 'Connected' : 'Disconnected'}</span>
+      <div className={sidebarStyles.statusBar}>
+        <div className={`${sidebarStyles.statusIndicator} ${isConnected ? sidebarStyles.statusConnected : sidebarStyles.statusDisconnected}`}></div>
+        <span className="text-sm">{isConnected ? 'Connected' : 'Disconnected'}</span>
       </div>
     </div>
   );

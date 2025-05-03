@@ -6,6 +6,13 @@ import CommandView from './components/CommandView';
 import ToastMessage from './components/ToastMessage';
 import LoadingOverlay from './components/LoadingOverlay';
 
+// Custom CSS for premium glass effect
+const appStyles = {
+  container: "min-h-screen bg-gradient-to-br from-gray-950 to-gray-900 text-gray-100 flex overflow-hidden font-sans",
+  content: "flex-1 flex flex-col relative overflow-hidden backdrop-blur-sm border-l border-gray-800/40",
+  mainContent: "flex-1 overflow-x-hidden overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent"
+};
+
 const App = () => {
   const [activeView, setActiveView] = useState('keys-view');
   const [isConnected, setIsConnected] = useState(false);
@@ -28,7 +35,7 @@ const App = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-900">
+    <div className={appStyles.container}>
       <Sidebar 
         activeView={activeView} 
         setActiveView={setActiveView}
@@ -40,8 +47,8 @@ const App = () => {
         setIsLoading={setIsLoading}
       />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-800">
+      <div className={appStyles.content}>
+        <main className={appStyles.mainContent}>
           {activeView === 'keys-view' && (
             <KeysView 
               isConnected={isConnected}

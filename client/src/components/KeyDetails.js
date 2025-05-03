@@ -1,5 +1,30 @@
 import React from 'react';
 
+const keyDetailsStyles = {
+  container: "h-full bg-gray-900 text-gray-100 flex flex-col",
+  header: "p-4 bg-black/30 sticky top-0 z-10 flex justify-between items-center backdrop-blur-md border-b border-gray-800/30",
+  title: "text-xl font-semibold flex items-center gap-2 truncate",
+  contentContainer: "flex-1 p-4 overflow-auto",
+  metadataCard: "grid grid-cols-3 gap-4 mb-4 bg-black/20 p-4 rounded-lg border border-gray-800/30 shadow-md backdrop-blur-sm",
+  metadataItem: "space-y-1",
+  metadataLabel: "text-xs uppercase tracking-wider text-gray-500",
+  metadataValue: "font-semibold text-white",
+  valueSection: "mb-4 space-y-2",
+  valueSectionLabel: "font-semibold text-white flex items-center gap-2",
+  valueContainer: "bg-black/30 border border-gray-800/30 rounded-lg p-3 shadow-inner overflow-auto max-h-96 backdrop-blur-sm",
+  textArea: "w-full h-40 p-3 bg-black/40 text-white border border-gray-700/30 rounded-md font-mono text-sm resize-none focus:outline-none focus:ring-1 focus:ring-red-500",
+  table: {
+    container: "min-w-full border border-gray-800/50 rounded-lg overflow-hidden",
+    header: "bg-black/60 text-left text-white text-sm font-semibold",
+    headerCell: "py-2 px-4 border-b border-gray-800/50",
+    body: "divide-y divide-gray-800/30",
+    row: "transition-colors duration-150 hover:bg-gray-800/20",
+    cell: "py-2 px-4 text-sm"
+  },
+  footer: "mt-auto border-t border-gray-800/30 p-4 flex justify-end bg-black/30 backdrop-blur-sm",
+  deleteButton: "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white px-4 py-2 rounded-md flex items-center justify-center transition-all duration-300 gap-2"
+};
+
 const KeyDetails = ({ keyDetails, onDelete }) => {
   const formatBytes = (bytes, decimals = 2) => {
     if (bytes === 0) return '0 Bytes';
@@ -10,6 +35,17 @@ const KeyDetails = ({ keyDetails, onDelete }) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
   };
 
+  const getTypeIcon = (type) => {
+    switch(type) {
+      case 'string': return <i className="fas fa-font text-blue-400"></i>;
+      case 'list': return <i className="fas fa-list text-green-400"></i>;
+      case 'set': return <i className="fas fa-th-large text-purple-400"></i>;
+      case 'zset': return <i className="fas fa-sort-amount-up text-yellow-400"></i>;
+      case 'hash': return <i className="fas fa-hashtag text-red-400"></i>;
+      default: return <i className="fas fa-question-circle text-gray-400"></i>;
+    }
+  };
+
   const renderValue = () => {
     const { type, value } = keyDetails;
 
@@ -17,24 +53,24 @@ const KeyDetails = ({ keyDetails, onDelete }) => {
       return (
         <textarea
           readOnly
-          className="w-full h-40 p-2 bg-gray-700 text-white border border-gray-600 rounded-md font-mono text-sm"
+          className={keyDetailsStyles.textArea}
           value={value}
         />
       );
     } else if (type === 'list') {
       return (
-        <table className="min-w-full border border-gray-600">
-          <thead className="bg-gray-700">
+        <table className={keyDetailsStyles.table.container}>
+          <thead className={keyDetailsStyles.table.header}>
             <tr>
-              <th className="py-2 px-4 border border-gray-600 text-left text-white">Index</th>
-              <th className="py-2 px-4 border border-gray-600 text-left text-white">Value</th>
+              <th className={keyDetailsStyles.table.headerCell}>Index</th>
+              <th className={keyDetailsStyles.table.headerCell}>Value</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className={keyDetailsStyles.table.body}>
             {value.map((item, index) => (
-              <tr key={index} className="border-t border-gray-600">
-                <td className="py-2 px-4 border border-gray-600 text-white">{index}</td>
-                <td className="py-2 px-4 border border-gray-600 text-white">{item}</td>
+              <tr key={index} className={keyDetailsStyles.table.row}>
+                <td className={keyDetailsStyles.table.cell}>{index}</td>
+                <td className={keyDetailsStyles.table.cell}>{item}</td>
               </tr>
             ))}
           </tbody>
@@ -42,16 +78,16 @@ const KeyDetails = ({ keyDetails, onDelete }) => {
       );
     } else if (type === 'set') {
       return (
-        <table className="min-w-full border border-gray-600">
-          <thead className="bg-gray-700">
+        <table className={keyDetailsStyles.table.container}>
+          <thead className={keyDetailsStyles.table.header}>
             <tr>
-              <th className="py-2 px-4 border border-gray-600 text-left text-white">Value</th>
+              <th className={keyDetailsStyles.table.headerCell}>Member</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className={keyDetailsStyles.table.body}>
             {value.map((item, index) => (
-              <tr key={index} className="border-t border-gray-600">
-                <td className="py-2 px-4 border border-gray-600 text-white">{item}</td>
+              <tr key={index} className={keyDetailsStyles.table.row}>
+                <td className={keyDetailsStyles.table.cell}>{item}</td>
               </tr>
             ))}
           </tbody>
@@ -63,18 +99,18 @@ const KeyDetails = ({ keyDetails, onDelete }) => {
         pairs.push({ member: value[i], score: value[i+1] });
       }
       return (
-        <table className="min-w-full border border-gray-600">
-          <thead className="bg-gray-700">
+        <table className={keyDetailsStyles.table.container}>
+          <thead className={keyDetailsStyles.table.header}>
             <tr>
-              <th className="py-2 px-4 border border-gray-600 text-left text-white">Member</th>
-              <th className="py-2 px-4 border border-gray-600 text-left text-white">Score</th>
+              <th className={keyDetailsStyles.table.headerCell}>Member</th>
+              <th className={keyDetailsStyles.table.headerCell}>Score</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className={keyDetailsStyles.table.body}>
             {pairs.map((pair, index) => (
-              <tr key={index} className="border-t border-gray-600">
-                <td className="py-2 px-4 border border-gray-600 text-white">{pair.member}</td>
-                <td className="py-2 px-4 border border-gray-600 text-white">{pair.score}</td>
+              <tr key={index} className={keyDetailsStyles.table.row}>
+                <td className={keyDetailsStyles.table.cell}>{pair.member}</td>
+                <td className={keyDetailsStyles.table.cell}>{pair.score}</td>
               </tr>
             ))}
           </tbody>
@@ -82,18 +118,18 @@ const KeyDetails = ({ keyDetails, onDelete }) => {
       );
     } else if (type === 'hash') {
       return (
-        <table className="min-w-full border border-gray-600">
-          <thead className="bg-gray-700">
+        <table className={keyDetailsStyles.table.container}>
+          <thead className={keyDetailsStyles.table.header}>
             <tr>
-              <th className="py-2 px-4 border border-gray-600 text-left text-white">Field</th>
-              <th className="py-2 px-4 border border-gray-600 text-left text-white">Value</th>
+              <th className={keyDetailsStyles.table.headerCell}>Field</th>
+              <th className={keyDetailsStyles.table.headerCell}>Value</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className={keyDetailsStyles.table.body}>
             {Object.entries(value).map(([field, val], index) => (
-              <tr key={index} className="border-t border-gray-600">
-                <td className="py-2 px-4 border border-gray-600 text-white">{field}</td>
-                <td className="py-2 px-4 border border-gray-600 text-white">{val}</td>
+              <tr key={index} className={keyDetailsStyles.table.row}>
+                <td className={keyDetailsStyles.table.cell}>{field}</td>
+                <td className={keyDetailsStyles.table.cell}>{val}</td>
               </tr>
             ))}
           </tbody>
@@ -101,7 +137,7 @@ const KeyDetails = ({ keyDetails, onDelete }) => {
       );
     } else {
       return (
-        <pre className="p-2 bg-gray-700 text-white rounded-md overflow-auto max-h-80 text-sm">
+        <pre className="p-3 bg-black/40 text-white rounded-md overflow-auto max-h-80 text-sm font-mono">
           {JSON.stringify(value, null, 2)}
         </pre>
       );
@@ -109,39 +145,50 @@ const KeyDetails = ({ keyDetails, onDelete }) => {
   };
 
   return (
-    <div className="p-4 bg-gray-800 text-white">
-      <div className="text-xl font-semibold border-b border-gray-600 pb-2 mb-4">{keyDetails.key}</div>
-
-      <div className="grid grid-cols-3 gap-4 mb-4 bg-gray-900 p-4 rounded-lg">
-        <div>
-          <div className="text-sm text-gray-400">Type</div>
-          <div className="font-semibold">{keyDetails.type}</div>
+    <div className={keyDetailsStyles.container}>
+      <div className={keyDetailsStyles.header}>
+        <div className={keyDetailsStyles.title}>
+          {getTypeIcon(keyDetails.type)}
+          <span className="truncate">{keyDetails.key}</span>
         </div>
-        <div>
-          <div className="text-sm text-gray-400">TTL</div>
-          <div className="font-semibold">
-            {keyDetails.ttl > 0 ? `${keyDetails.ttl} seconds` : 'No expiration'}
+      </div>
+
+      <div className={keyDetailsStyles.contentContainer}>
+        <div className={keyDetailsStyles.metadataCard}>
+          <div className={keyDetailsStyles.metadataItem}>
+            <div className={keyDetailsStyles.metadataLabel}>Type</div>
+            <div className={keyDetailsStyles.metadataValue}>
+              {getTypeIcon(keyDetails.type)} {keyDetails.type}
+            </div>
+          </div>
+          <div className={keyDetailsStyles.metadataItem}>
+            <div className={keyDetailsStyles.metadataLabel}>Time to Live</div>
+            <div className={keyDetailsStyles.metadataValue}>
+              {keyDetails.ttl > 0 ? `${keyDetails.ttl} seconds` : 'No expiration'}
+            </div>
+          </div>
+          <div className={keyDetailsStyles.metadataItem}>
+            <div className={keyDetailsStyles.metadataLabel}>Memory Usage</div>
+            <div className={keyDetailsStyles.metadataValue}>{formatBytes(keyDetails.memory_usage)}</div>
           </div>
         </div>
-        <div>
-          <div className="text-sm text-gray-400">Size</div>
-          <div className="font-semibold">{formatBytes(keyDetails.memory_usage)}</div>
+
+        <div className={keyDetailsStyles.valueSection}>
+          <div className={keyDetailsStyles.valueSectionLabel}>
+            <i className="fas fa-database text-gray-400 mr-1"></i> Value
+          </div>
+          <div className={keyDetailsStyles.valueContainer}>
+            {renderValue()}
+          </div>
         </div>
       </div>
 
-      <div className="mb-4">
-        <div className="font-semibold mb-2">Value</div>
-        <div className="bg-gray-900 border border-gray-600 rounded-lg p-2 overflow-auto">
-          {renderValue()}
-        </div>
-      </div>
-
-      <div className="border-t border-gray-600 pt-4 flex justify-end">
+      <div className={keyDetailsStyles.footer}>
         <button
           onClick={() => onDelete(keyDetails.key)}
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md flex items-center transition duration-150 ease-in-out"
+          className={keyDetailsStyles.deleteButton}
         >
-          <i className="fas fa-trash mr-2"></i> Delete Key
+          <i className="fas fa-trash-alt"></i> Delete Key
         </button>
       </div>
     </div>
