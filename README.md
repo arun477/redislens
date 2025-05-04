@@ -2,7 +2,6 @@
 
 Redis Lens is a Simple, beautiful Redis monitoring and management tool with a clean interface built using React and FastAPI. It allows you to connect to Redis servers, explore keys, execute commands, and monitor server performance.
 
-## Gallery
 
 | Key Explorer                   | Performance Monitor                 | Command Runner            |
 |--------------------------------|--------------------------------|--------------------------------|
