@@ -19,6 +19,7 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading, them
   const [keysPerPage, setKeysPerPage] = useState(50);
   const [totalKeys, setTotalKeys] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Theme-dependent styles
   const isDark = theme === 'dark';
@@ -349,8 +350,18 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading, them
 
   // Handle refresh event from Header
   useEffect(() => {
-    const handleRefresh = () => {
-      fetchKeys(pattern, currentPage, keysPerPage);
+    const handleRefresh = (event) => {
+      // Get connection status from event if available
+      const detail = event.detail || {};
+      
+      if (detail.hasOwnProperty('isConnected')) {
+        if (detail.isConnected) {
+          fetchKeys(pattern, currentPage, keysPerPage);
+        }
+      } else if (isConnected) {
+        // Fallback to the prop if event doesn't have the detail
+        fetchKeys(pattern, currentPage, keysPerPage);
+      }
     };
     
     window.addEventListener('refreshKeys', handleRefresh);
@@ -358,7 +369,7 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading, them
     return () => {
       window.removeEventListener('refreshKeys', handleRefresh);
     };
-  }, [pattern, currentPage, keysPerPage]);
+  }, [pattern, currentPage, keysPerPage, isConnected]);
 
   // When keys per page changes, reset to page 1
   useEffect(() => {
@@ -368,8 +379,16 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading, them
 
   // Initial load
   useEffect(() => {
-    if (isConnected) {
+    if (isConnected && isInitialLoad) {
       fetchKeys();
+      setIsInitialLoad(false);
+    }
+  }, [isConnected, isInitialLoad]);
+
+  // When connection status changes, refresh data
+  useEffect(() => {
+    if (isConnected) {
+      fetchKeys(pattern, currentPage, keysPerPage);
     }
   }, [isConnected]);
 
@@ -829,7 +848,14 @@ const KeysView = ({ isConnected, connectionConfig, showToast, setIsLoading, them
       {/* Key Details Panel */}
       <div className={`w-1/2 ${isDark ? 'bg-gray-800/50' : 'bg-gray-50/50'}`}>
         {selectedKey && keyDetails ? (
-          <KeyDetails keyDetails={keyDetails} onDelete={deleteKey} theme={theme} />
+          <KeyDetails 
+            keyDetails={keyDetails} 
+            onDelete={deleteKey} 
+            connectionConfig={connectionConfig}
+            showToast={showToast}
+            setIsLoading={setIsLoading}
+            theme={theme} 
+          />
         ) : (
           <div className="h-full flex flex-col items-center justify-center p-8 text-center">
             <div className={`w-20 h-20 flex items-center justify-center rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'} mb-6`}>

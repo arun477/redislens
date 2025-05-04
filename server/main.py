@@ -7,7 +7,7 @@ import os
 def main():
     parser = argparse.ArgumentParser(description="Redis Explorer Server")
     parser.add_argument("--host", default="localhost", help="Server host")
-    parser.add_argument("--port", type=int, default=8000, help="Server port")
+    parser.add_argument("--port", type=int, default=8005, help="Server port")
     
     args = parser.parse_args()
     

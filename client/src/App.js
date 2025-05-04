@@ -80,9 +80,11 @@ const App = () => {
     // This will be passed to the active view component to trigger refresh
     if (activeView === 'keys-view') {
       // The event will be handled by the KeysView component
-      window.dispatchEvent(new CustomEvent('refreshKeys'));
+      window.dispatchEvent(new CustomEvent('refreshKeys', { detail: { isConnected } }));
     } else if (activeView === 'info-view') {
-      window.dispatchEvent(new CustomEvent('refreshInfo'));
+      window.dispatchEvent(new CustomEvent('refreshInfo', { detail: { isConnected } }));
+    } else if (activeView === 'command-view') {
+      window.dispatchEvent(new CustomEvent('refreshCommand', { detail: { isConnected } }));
     }
   };
 

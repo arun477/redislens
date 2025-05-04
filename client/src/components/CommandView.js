@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading }) => {
+const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading, theme }) => {
   const [inputValue, setInputValue] = useState('');
   const [commandHistory, setCommandHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -11,6 +11,36 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
   
   const terminalRef = useRef(null);
   const inputRef = useRef(null);
+
+  const isDark = theme === 'dark';
+
+  // Theme-dependent styles
+  const styles = {
+    container: isDark ? 'bg-gray-900 text-gray-200' : 'bg-white text-gray-800',
+    header: {
+      bg: isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200',
+      title: isDark ? 'text-white' : 'text-gray-800',
+      icon: isDark ? 'text-cyan-500' : 'text-cyan-600',
+    },
+    button: {
+      default: isDark 
+        ? 'bg-gray-700 hover:bg-gray-600 text-gray-200 border-gray-600' 
+        : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-200',
+    },
+    terminal: {
+      bg: isDark ? 'bg-gray-900 text-white' : 'bg-gray-900 text-white',
+      promptBg: isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-800 border-gray-700',
+      input: isDark ? 'bg-transparent text-white' : 'bg-transparent text-white',
+      prompt: isDark ? 'text-cyan-400' : 'text-cyan-400',
+    },
+    output: {
+      command: isDark ? 'text-cyan-400' : 'text-cyan-400',
+      result: isDark ? 'text-green-400' : 'text-green-400',
+      error: isDark ? 'text-red-400' : 'text-red-400',
+      info: isDark ? 'text-yellow-400' : 'text-yellow-400',
+      system: isDark ? 'text-gray-400 italic' : 'text-gray-400 italic',
+    }
+  };
 
   const scrollToBottom = () => {
     if (terminalRef.current) {
@@ -27,6 +57,34 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
     if (inputRef.current) {
       inputRef.current.focus();
     }
+  }, []);
+
+  // Handle refresh event from Header
+  useEffect(() => {
+    const handleRefresh = (event) => {
+      // Get connection status from event if available
+      const detail = event.detail || {};
+      
+      if (detail.hasOwnProperty('isConnected')) {
+        if (!detail.isConnected) {
+          setTerminalOutput(prev => [...prev, { 
+            type: 'error', 
+            content: 'Connection to Redis server was lost. Please reconnect.' 
+          }]);
+        } else {
+          setTerminalOutput(prev => [...prev, { 
+            type: 'system', 
+            content: 'Terminal refreshed. Connection is active.' 
+          }]);
+        }
+      }
+    };
+    
+    window.addEventListener('refreshCommand', handleRefresh);
+    
+    return () => {
+      window.removeEventListener('refreshCommand', handleRefresh);
+    };
   }, []);
 
   const executeCommand = async (command = '') => {
@@ -227,21 +285,14 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
   };
   
   const getOutputClass = (type) => {
-    switch(type) {
-      case 'command': return 'text-cyan-400';
-      case 'result': return 'text-green-400';
-      case 'error': return 'text-red-400';
-      case 'info': return 'text-yellow-400';
-      case 'system': return 'text-gray-400 italic';
-      default: return 'text-white';
-    }
+    return styles.output[type] || 'text-white';
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
-      <div className="p-4 border-b border-gray-200 bg-white flex justify-between items-center">
-        <h1 className="text-xl font-semibold text-gray-800 flex items-center gap-3">
-          <i className="fas fa-terminal text-cyan-600"></i>
+    <div className={`h-full flex flex-col ${styles.container}`}>
+      <div className={`p-4 border-b ${styles.header.bg} flex justify-between items-center`}>
+        <h1 className={`text-xl font-semibold ${styles.header.title} flex items-center gap-3`}>
+          <i className={`fas fa-terminal ${styles.header.icon}`}></i>
           Redis Command Terminal
         </h1>
         
@@ -252,7 +303,7 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
                 { type: 'system', content: 'Terminal cleared' }
               ]);
             }}
-            className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm flex items-center gap-1.5 transition-colors"
+            className={`px-3 py-1.5 ${styles.button.default} rounded text-sm flex items-center gap-1.5 transition-colors`}
           >
             <i className="fas fa-eraser"></i>
             Clear
@@ -260,7 +311,7 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
           
           <button
             onClick={showHelpCommand}
-            className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm flex items-center gap-1.5 transition-colors"
+            className={`px-3 py-1.5 ${styles.button.default} rounded text-sm flex items-center gap-1.5 transition-colors`}
           >
             <i className="fas fa-question-circle"></i>
             Help
@@ -268,20 +319,20 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
         </div>
       </div>
       
-      {/* Terminal with metallic black theme for contrast */}
+      {/* Terminal with metallic black theme for contrast - this stays dark in both themes for readability */}
       <div 
         ref={terminalRef}
-        className="flex-1 overflow-auto p-4 font-mono text-sm bg-gradient-to-b from-gray-900 to-black text-white"
+        className={`flex-1 overflow-auto p-4 font-mono text-sm ${styles.terminal.bg}`}
       >
         {terminalOutput.map((output, index) => (
           <div key={index} className={`mb-2 whitespace-pre-wrap ${getOutputClass(output.type)}`}>
-            {output.type === 'command' && <span className="text-cyan-400 mr-2">redis&gt;</span>}
+            {output.type === 'command' && <span className={`${styles.terminal.prompt} mr-2`}>redis&gt;</span>}
             {output.content}
           </div>
         ))}
       </div>
       
-      <div className="p-3 border-t border-gray-200 bg-gradient-to-b from-gray-800 to-black">
+      <div className={`p-3 border-t ${isDark ? 'border-gray-700' : 'border-gray-700'} ${styles.terminal.promptBg}`}>
         <div className="flex items-center text-cyan-400 font-mono text-sm">
           <span className="mr-2">{isConnected ? 'redis>' : 'not-connected>'}</span>
           <input
@@ -290,7 +341,7 @@ const CommandView = ({ isConnected, connectionConfig, showToast, setIsLoading })
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            className="flex-1 bg-transparent border-none outline-none text-white focus:ring-0"
+            className={`flex-1 ${styles.terminal.input} border-none outline-none focus:ring-0`}
             placeholder="Type command here..."
             autoFocus
           />

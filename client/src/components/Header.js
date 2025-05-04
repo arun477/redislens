@@ -62,6 +62,39 @@ const Header = ({
     }
   };
   
+  // This is the key update - we're checking connection before refreshing
+  const handleRefresh = async () => {
+    // First check if we're still connected
+    try {
+      setIsLoading(true);
+      
+      const response = await fetch('/api/ping', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(connectionConfig)
+      });
+      
+      const data = await response.json();
+
+      if (data.status === 'ok') {
+        // If still connected, proceed with refresh
+        setIsConnected(true);
+        refreshCurrentView();
+      } else {
+        // If not connected, notify user and don't try to refresh
+        setIsConnected(false);
+        showToast('Connection Lost', 'Connection to Redis server was lost. Please reconnect.', true);
+      }
+    } catch (error) {
+      setIsConnected(false);
+      showToast('Connection Error', 'Connection to Redis server was lost. Please reconnect.', true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   const headerClasses = {
     container: theme === 'dark'
       ? "h-16 border-b border-gray-700 bg-gray-900 bg-opacity-70 backdrop-blur-lg"
@@ -117,7 +150,7 @@ const Header = ({
       {/* Right side with actions */}
       <div className="flex items-center space-x-3">
         <button 
-          onClick={refreshCurrentView}
+          onClick={handleRefresh}
           className={`${headerClasses.iconButton} p-2 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500`}
           title="Refresh"
         >
