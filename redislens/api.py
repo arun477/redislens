@@ -15,6 +15,7 @@ from .redis_client import RedisClient
 package_dir = os.path.dirname(os.path.abspath(__file__))
 client_build_dir = os.path.join(package_dir, "static")
 static_dir = os.path.join(client_build_dir, "static")
+assets_dir = os.path.join(client_build_dir, "assets")
 
 app = FastAPI(title="Redis Explorer API", description="API for exploring Redis server")
 
@@ -27,13 +28,48 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Check if the static files directory exists
+# Favicon route - defined BEFORE the catch-all route
+@app.get("/favicon.ico", include_in_schema=False)
+async def get_favicon():
+    favicon_path = os.path.join(client_build_dir, "favicon.ico")
+    if os.path.exists(favicon_path):
+        return FileResponse(favicon_path, media_type="image/x-icon")
+    else:
+        raise HTTPException(status_code=404, detail="Favicon not found")
+
+# Mount static directories
 if os.path.exists(static_dir):
-    # Mount static files directory
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 else:
-    print(f"Warning: Static files directory not found at {static_dir}")
-    print("The application may not work correctly without static files")
+    print(f"Warning: Static directory not found at {static_dir}")
+
+if os.path.exists(assets_dir):
+    app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+else:
+    print(f"Warning: Assets directory not found at {assets_dir}")
+
+# Define route for webfonts explicitly to ensure correct MIME types
+@app.get("/assets/fontawesome/webfonts/{font_file:path}")
+async def get_font(font_file: str):
+    font_path = os.path.join(assets_dir, "fontawesome", "webfonts", font_file)
+    if not os.path.exists(font_path):
+        raise HTTPException(status_code=404, detail=f"Font file not found: {font_file}")
+    
+    # Set correct MIME type based on file extension
+    if font_file.endswith(".woff2"):
+        media_type = "font/woff2"
+    elif font_file.endswith(".woff"):
+        media_type = "font/woff"
+    elif font_file.endswith(".ttf"):
+        media_type = "font/ttf"
+    elif font_file.endswith(".eot"):
+        media_type = "application/vnd.ms-fontobject"
+    elif font_file.endswith(".svg"):
+        media_type = "image/svg+xml"
+    else:
+        media_type = "application/octet-stream"
+    
+    return FileResponse(font_path, media_type=media_type)
 
 class RedisConnection(BaseModel):
     host: str = "localhost"
