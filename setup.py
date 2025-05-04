@@ -1,43 +1,54 @@
 from setuptools import setup, find_packages
+import os
+import re
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+# Read version without importing
+with open(os.path.join("redislens", "version.py"), "r") as f:
+    version_content = f.read()
+    version_match = re.search(r'__version__ = "([^"]+)"', version_content)
+    version = version_match.group(1) if version_match else "0.0.0"
 
-package_data = {
-    "redis_lens": [
-        "build/**/*",
-        "static/**/*",
-    ],
-}
+# Read long description from README
+with open("README.md", "r", encoding="utf-8") as f:
+    long_description = f.read()
 
 setup(
-    name="redis-lens",
-    version="0.1.0",
-    author="arun477",
-    author_email="arunarumugam411@gmail.com",
-    description="Simple Redis monitoring and management tool",
+    name="redislens",
+    version=version,
+    description="Redis Lens",
     long_description=long_description,
     long_description_content_type="text/markdown",
+    author="arun477",
+    author_email="arunarumugam411@gmail.com",
     url="https://github.com/arun477/redislens",
+    license="MIT",
     packages=find_packages(),
-    package_data=package_data,
     include_package_data=True,
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-    ],
-    python_requires=">=3.7",
     install_requires=[
         "fastapi>=0.95.0",
-        "uvicorn>=0.21.0",
+        "uvicorn>=0.22.0",
         "redis>=4.5.4",
-        "requests>=2.28.0",
-        "typer>=0.9.0",
+        "pydantic>=1.10.7",
     ],
     entry_points={
         "console_scripts": [
-            "redis-lens=redis_lens.cli:main",
+            "redislens=redislens.cli:main",
         ],
     },
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Environment :: Web Environment",
+        "Framework :: FastAPI",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Topic :: Database",
+        "Topic :: Utilities",
+    ],
+    python_requires=">=3.8",
+    keywords="redis, gui, admin, monitoring, database",
 )

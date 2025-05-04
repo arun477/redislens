@@ -7,22 +7,16 @@ from pydantic import BaseModel
 import os
 import json
 import math
-import logging
-from pathlib import Path
 
+# Use relative import for RedisClient
 from .redis_client import RedisClient
 
-# Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger("redis-lens.api")
+# Update paths to work with package structure
+package_dir = os.path.dirname(os.path.abspath(__file__))
+client_build_dir = os.path.join(package_dir, "static")
+static_dir = os.path.join(client_build_dir, "static")
 
-# Get package directory
-package_dir = Path(__file__).parent.absolute()
-build_dir = package_dir / "build"
-static_dir = package_dir / "static"
-
-# Create the FastAPI app
-app = FastAPI(title="Redis Lens API", description="API for exploring Redis server")
+app = FastAPI(title="Redis Explorer API", description="API for exploring Redis server")
 
 # Add CORS middleware for development
 app.add_middleware(
@@ -33,12 +27,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static directories
-if build_dir.exists():
+# Check if the static files directory exists
+if os.path.exists(static_dir):
+    # Mount static files directory
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
-    logger.info(f"Mounted static directory: {static_dir}")
 else:
-    logger.warning(f"Build directory not found at {build_dir}")
+    print(f"Warning: Static files directory not found at {static_dir}")
+    print("The application may not work correctly without static files")
 
 class RedisConnection(BaseModel):
     host: str = "localhost"
@@ -69,11 +64,11 @@ def get_redis_client(conn: RedisConnection = Depends()):
 @app.get("/", response_class=FileResponse)
 async def get_index():
     """Serve the main UI page."""
-    index_path = build_dir / "index.html"
-    if index_path.exists():
+    index_path = os.path.join(client_build_dir, "index.html")
+    if os.path.exists(index_path):
         return FileResponse(index_path)
     else:
-        raise HTTPException(status_code=404, detail="UI not found. Please ensure the package was installed correctly.")
+        raise HTTPException(status_code=404, detail="Client build not found.")
 
 @app.get("/{catch_all:path}", response_class=FileResponse)
 async def catch_all(catch_all: str):
@@ -81,17 +76,11 @@ async def catch_all(catch_all: str):
     if catch_all.startswith("api/"):
         raise HTTPException(status_code=404, detail="API endpoint not found")
     
-    # Check if the path exists in the build directory (for static assets)
-    asset_path = build_dir / catch_all
-    if asset_path.exists() and asset_path.is_file():
-        return FileResponse(asset_path)
-    
-    # Otherwise, serve the index.html for client-side routing
-    index_path = build_dir / "index.html"
-    if index_path.exists():
+    index_path = os.path.join(client_build_dir, "index.html")
+    if os.path.exists(index_path):
         return FileResponse(index_path)
     else:
-        raise HTTPException(status_code=404, detail="UI not found. Please ensure the package was installed correctly.")
+        raise HTTPException(status_code=404, detail="Client build not found.")
 
 @app.post("/api/ping")
 def ping(conn: RedisConnection):
@@ -110,7 +99,6 @@ def get_info(client: RedisClient = Depends(get_redis_client)):
     try:
         return {"info": client.get_info()}
     except Exception as e:
-        logger.error(f"Error fetching Redis info: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching Redis info: {str(e)}")
 
 @app.post("/api/keys")
@@ -142,7 +130,6 @@ def get_keys(
             "total_pages": total_pages
         }
     except Exception as e:
-        logger.error(f"Error fetching keys: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching keys: {str(e)}")
 
 @app.post("/api/key/{key}")
@@ -167,7 +154,6 @@ def get_key(key: str, client: RedisClient = Depends(get_redis_client)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching key details: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching key details: {str(e)}")
 
 @app.delete("/api/key/{key}")
@@ -184,7 +170,6 @@ def delete_key(key: str, client: RedisClient = Depends(get_redis_client)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error deleting key: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error deleting key: {str(e)}")
 
 @app.post("/api/execute")
@@ -193,7 +178,6 @@ def execute_command(command_data: RedisCommand, client: RedisClient = Depends(ge
         result = client.execute_command(command_data.command, *command_data.args)
         return {"result": result}
     except Exception as e:
-        logger.error(f"Error executing command: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error executing command: {str(e)}")
 
 @app.post("/api/keys/delete")

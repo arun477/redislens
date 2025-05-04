@@ -1,4 +1,3 @@
 include LICENSE
 include README.md
-recursive-include redis_lens/build *
-recursive-include redis_lens/static *
+recursive-include redislens/static *
