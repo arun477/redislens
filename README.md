@@ -23,8 +23,7 @@ Redis Lens is a simple python redis monitoring and management tool with a clean 
 - 🔍 **Key Explorer**: Browse, search, and manage Redis keys
 - 🖥️ **Command Terminal**: Execute any Redis command with a built-in command history
 - 📊 **Server Dashboard**: Monitor Redis server performance metrics with real-time charts
-- 🌓 **Dark/Light Mode**: Eye-friendly interface that works in any lighting condition
-- 🚀 **Offline Mode**: Works without internet connection by bundling all required assets
+
 
 ## Installation
 
