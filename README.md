@@ -112,9 +112,4 @@ The frontend is a React application. To build it:
 
 ## License
 
-MIT License - See LICENSE file for details.
-
-## Acknowledgements
-
-- Thanks to the Redis team for creating an amazing in-memory database
-- React, FastAPI, Tailwind CSS, and other open-source libraries that made this project possible
+MIT License
