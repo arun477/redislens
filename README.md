@@ -41,7 +41,7 @@ Start Redis Lens with a simple command:
 redislens
 ```
 
-This will start the monitoring server on http://localhost:8005.
+This will start the monitoring server on http://localhost:8005
 
 ### Command-Line Options
 
